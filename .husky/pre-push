@@ -1,1 +1,1 @@
-npx lint && npx lint:no-console
+npm run lint && npm run lint:no-console
