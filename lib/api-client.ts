@@ -5,7 +5,6 @@ import { ForbiddenError } from "./types/errors/server-reponse-errors/forbidden-e
 import { UnauthorizedError } from "./types/errors/server-reponse-errors/unauthorized-error";
 import { getAccessToken } from "@auth0/nextjs-auth0";
 import { InvalidTokenError } from "./types/errors/server-reponse-errors/invalid-token-error";
-import { ApiResponse } from "./types/Session-replay-list";
 
 /**
  * APIClient handles HTTP requests to the backend API.
@@ -62,16 +61,6 @@ class APIClient {
     return this.handleResponse(response);
   }
 
-  async getV2(endpoint: string, params?: URLSearchParams): Promise<ApiResponse> {
-  const headers = await this.getHeaders();
-  const url = `${this.baseURL}${endpoint}${params ? `?${params.toString()}` : ""}`;
-  const response = await fetch(url, {
-    headers,
-    method: "GET",
-  });
-
-  return this.handleResponseV2(response);
-}
 
   async post(endpoint: string, data?: unknown): Promise<Response> {
     const headers = await this.getHeaders();
@@ -145,20 +134,6 @@ class APIClient {
     return responseJson;
   }
 
-  private async handleResponseV2(response: Response): Promise<ApiResponse> {
-  const responseJson = await response.json();
-
-  if (!response.ok) {
-    throw this.handleError(responseJson);
-  }
-
-  if (responseJson.error) {
-    throw this.handleError(responseJson.error);
-  }
-
-  return responseJson;
-}
-
 
   // TODO: Create a better error handling
   private handleError(error: unknown): Error {
@@ -196,10 +171,10 @@ class APIClient {
 }
 
 export const apiClient = new APIClient(
-  process.env.NEXT_PUBLIC_ATLAS_BACKEND_URL!
+  process.env.NEXT_PUBLIC_DEAL_DIVE_BACKEND_URL!
 );
 
 export const unauthenticatedApiClient = new APIClient(
-  process.env.NEXT_PUBLIC_ATLAS_BACKEND_URL!,
+  process.env.NEXT_PUBLIC_DEAL_DIVE_BACKEND_URL!,
   false
 );
