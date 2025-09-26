@@ -1,5 +1,10 @@
 export const APP_ROUTES = {
   HOME: "/",
+  ACCOUNT: "/account",
+  CREATE: "/create",
+  HOT: "/hot",
+  SAVED: "/saved",
+  SEARCH_PAGE: "/search",
   AUTH: {
     SIGNUP: "/auth/signup",
     LOGIN: "/auth/login",
@@ -26,7 +31,6 @@ export const APP_ROUTES = {
   },
   SEARCH: (query: string, filters: string) =>
     `/search?query=${query}&${filters}`,
-  SEARCH_PAGE: "/search",
   GOLDEN_PATH: "/golden-path",
   GOLDEN_PATH_DETAIL: (id: string) => `/golden-path/${id}`,
 };
