@@ -10,7 +10,7 @@ export default function AuthLayout({
       <div className="w-full md:max-w-xl">
         <div className="my-16 flex justify-center">
           <Image
-            src="/images/autoplay/logo-horizontal.svg"
+            src="/images/deal-dive/logo.png"
             alt="Logo"
             width={200}
             height={100}

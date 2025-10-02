@@ -11,7 +11,7 @@ export default function SignupCover() {
   return (
     <div className="min-h-full bg-[url('/images/sign-up/sign-up-cover.webp')] bg-cover bg-center py-6 px-7 text-white">
       <Image
-        src="/images/autoplay/logo-horizontal-white.svg"
+        src="/images/deal-dive/logo.png"
         alt="Sign up cover"
         width={112}
         height={21}
