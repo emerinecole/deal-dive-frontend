@@ -1,206 +1,157 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormMessage,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
-import { getIndustries } from "@/lib/services/industry-service";
-import { signup } from "@/lib/services/auth-service";
 import { useState } from "react";
-import { SignupVerifyEmail } from "./signup-verify-email";
-import {
-  signupFormSchema,
-  SignupFormInputs,
-} from "@/lib/schemas/signup-schema";
-import { Industry } from "@/lib/types/industry";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { signup } from "@/lib/services/auth-service";
+import { APP_ROUTES } from "@/constants/app-routes";
 
 export default function SignupForm() {
-  const [signedUpEmail, setSignedUpEmail] = useState("");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
-  const {
-    isPending: industryPending,
-    error: industryError,
-    data: industries,
-  } = useQuery<Industry[]>({
-    queryKey: ["industries"],
-    queryFn: getIndustries,
-  });
-  const form = useForm<SignupFormInputs>({
-    resolver: zodResolver(signupFormSchema),
-    mode: "onTouched",
-    defaultValues: {
-      organizationName: "",
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      industry: "",
-    },
-  });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-  const {
-    mutate: signupMutation,
-    isPending: isSigningUp,
-    error: signupError,
-  } = useMutation({
-    mutationFn: signup,
-    onSuccess: () => {
-      setSignedUpEmail(form.getValues("email"));
-      form.reset();
-    },
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords don't match");
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      await signup({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      });
+      
+      setSuccess(true);
+      // Redirect to home page after successful signup
+      setTimeout(() => {
+        router.push(APP_ROUTES.HOME);
+      }, 2000);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="text-center p-6">
+        <div className="text-green-600 text-lg font-semibold mb-2">
+          Account created successfully!
+        </div>
+        <p className="text-muted-foreground">
+          Please check your email to verify your account. Redirecting...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <Form {...form}>
-      {signedUpEmail && <SignupVerifyEmail email={signedUpEmail} />}
-      <form onSubmit={form.handleSubmit((data) => signupMutation(data))}>
-        <div className="flex flex-col gap-4">
-          {(industryError || signupError) && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>
-                {signupError?.message
-                  ? signupError.message
-                  : "Something went wrong please try again later."}
-              </AlertDescription>
-            </Alert>
-          )}
-          <FormField
-            control={form.control}
-            name="organizationName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Organisation name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Your company Inc." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="fullName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Full Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="john@doe.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="············"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="············"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="industry"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Industry</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={industryPending}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      {industryPending ? (
-                        <SelectValue placeholder="Loading..." />
-                      ) : (
-                        <SelectValue placeholder="Select your industry" />
-                      )}
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {industries?.map(({ id, name }) => (
-                      <SelectItem key={id} value={name}>
-                        {name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
         </div>
-        <Button
-          type="submit"
-          disabled={!!industryError || industryPending || isSigningUp}
-          loading={isSigningUp}
-          className="w-full mt-6"
-        >
-          Create account
-        </Button>
-      </form>
-    </Form>
+      )}
+    
+
+      <div>
+        <label htmlFor="fullName" className="block text-sm font-medium mb-1">
+          Full Name
+        </label>
+        <Input
+          id="fullName"
+          name="fullName"
+          type="text"
+          placeholder="John Doe"
+          value={formData.fullName}
+          onChange={handleInputChange}
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium mb-1">
+          Email
+        </label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="john@doe.com"
+          value={formData.email}
+          onChange={handleInputChange}
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium mb-1">
+          Password
+        </label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="············"
+          value={formData.password}
+          onChange={handleInputChange}
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+          Confirm Password
+        </label>
+        <Input
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          placeholder="············"
+          value={formData.confirmPassword}
+          onChange={handleInputChange}
+          required
+        />
+      </div>
+
+      <Button
+        type="submit"
+        disabled={isLoading}
+        className="w-full mt-6"
+      >
+        {isLoading ? "Creating account..." : "Create account"}
+      </Button>
+    </form>
   );
 }

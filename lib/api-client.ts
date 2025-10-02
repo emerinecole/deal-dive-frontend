@@ -3,8 +3,8 @@ import { NotFoundError } from "./types/errors/server-reponse-errors/not-found-er
 import { PreconditionFailedError } from "./types/errors/server-reponse-errors/precondition-failed-error";
 import { ForbiddenError } from "./types/errors/server-reponse-errors/forbidden-error";
 import { UnauthorizedError } from "./types/errors/server-reponse-errors/unauthorized-error";
-import { getAccessToken } from "@auth0/nextjs-auth0";
 import { InvalidTokenError } from "./types/errors/server-reponse-errors/invalid-token-error";
+import { createClient } from "./supabase/client";
 
 /**
  * APIClient handles HTTP requests to the backend API.
@@ -31,9 +31,10 @@ class APIClient {
     }
 
     try {
-      // check if connected
-      const auth0Token = await getAccessToken();
-      if (!auth0Token) {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
         return {
           "Content-Type": "application/json",
         };
@@ -41,7 +42,7 @@ class APIClient {
 
       return {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${auth0Token}`,
+        Authorization: `Bearer ${session.access_token}`,
       };
     } catch {
       throw new InvalidTokenError();

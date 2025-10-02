@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Home, Plus, TrendingUp, Bookmark, Search, User } from "lucide-react";
-//import AuthRoute from "@/app/components/protected-route/auth-route";
+import AuthRoute from "@/app/components/protected-route/auth-route";
 import {
   Sidebar,
   SidebarContent,
@@ -55,8 +55,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    // <AuthRoute>
-    <SidebarProvider>
+    <AuthRoute>
+      <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2 px-2 py-1">
@@ -101,6 +101,6 @@ export default function DashboardLayout({
         </main>
       </SidebarInset>
     </SidebarProvider>
-    // </AuthRoute>
+    </AuthRoute>
   );
 }

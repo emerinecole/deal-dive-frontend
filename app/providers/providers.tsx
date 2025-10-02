@@ -1,5 +1,6 @@
 import JotaiProvider from "./jotai-provider";
 import { QueryProvider } from "./query-provider";
+import SupabaseProvider from "./supabase-provider";
 
 export default async function Providers({
   children,
@@ -7,10 +8,12 @@ export default async function Providers({
   children: React.ReactNode;
 }) {
   return (
-    <QueryProvider>
-            <JotaiProvider>
-              <>{children}</>
-            </JotaiProvider>
-    </QueryProvider>
+    <SupabaseProvider>
+      <QueryProvider>
+        <JotaiProvider>
+          <>{children}</>
+        </JotaiProvider>
+      </QueryProvider>
+    </SupabaseProvider>
   );
 }
