@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-// Define the deal type
+// Deal type for the form
 type Deal = {
   id: number;
   title: string;
@@ -16,8 +16,8 @@ type Deal = {
   expiresIn?: string;
 };
 
-// Start with your dummy deals
-let dummyDeals: Deal[] = [
+//dummy deals, only storing locally currently
+const dummyDeals: Deal[] = [
   {
     id: 1,
     title: '50% Off Electronics',
@@ -28,7 +28,6 @@ let dummyDeals: Deal[] = [
     location: 'New York, NY',
     expiresIn: '2 days',
   },
-  // ...other dummy deals
 ];
 
 export default function CreatePage() {
