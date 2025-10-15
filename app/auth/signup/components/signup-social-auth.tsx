@@ -8,7 +8,7 @@ export default function SignupSocialAuth() {
     try {
       await signInWithProvider('google');
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      //console.error('Error signing in with Google:', error);
     }
   };
 
@@ -16,7 +16,7 @@ export default function SignupSocialAuth() {
     try {
       await signInWithProvider('github');
     } catch (error) {
-      console.error('Error signing in with GitHub:', error);
+      //console.error('Error signing in with GitHub:', error);
     }
   };
 

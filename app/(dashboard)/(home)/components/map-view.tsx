@@ -85,7 +85,7 @@ export default function MapView() {
         alert('Location not found. Please try a different search term.');
       }
     } catch (error) {
-      console.error('Error searching for location:', error);
+      //console.error('Error searching for location:', error);
       alert('Error searching for location. Please try again.');
     }
   };
