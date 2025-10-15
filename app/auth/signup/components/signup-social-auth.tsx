@@ -7,16 +7,16 @@ export default function SignupSocialAuth() {
   const handleGoogleSignIn = async () => {
     try {
       await signInWithProvider('google');
-    } catch (error) {
-      console.error('Error signing in with Google:', error);
+    } catch {
+      //console.error('Error signing in with Google:', error);
     }
   };
 
   const handleGithubSignIn = async () => {
     try {
       await signInWithProvider('github');
-    } catch (error) {
-      console.error('Error signing in with GitHub:', error);
+    } catch {
+      //console.error('Error signing in with GitHub:', error);
     }
   };
 

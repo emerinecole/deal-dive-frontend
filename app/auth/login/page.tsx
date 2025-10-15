@@ -31,8 +31,12 @@ export default function LoginPage() {
     try {
       await signIn(formData.email, formData.password);
       router.push(APP_ROUTES.HOME);
-    } catch (err: any) {
-      setError(err.message || "Invalid email or password");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Invalid email or password");
+      }
     } finally {
       setIsLoading(false);
     }
