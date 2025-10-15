@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { Map as LeafletMap } from 'leaflet';
 
 // Dynamically import the map to avoid SSR issues
 const MapContainer = dynamic(
@@ -54,7 +55,7 @@ export default function MapView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.0060]);
   const [mapZoom, setMapZoom] = useState(13);
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
 
   useEffect(() => {
     setIsClient(true);
