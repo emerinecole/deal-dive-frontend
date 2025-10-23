@@ -34,7 +34,8 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
           });
         },
         (error) => {
-          console.error("Error getting current location:", error);
+          //console.error("Error getting current location:", error);
+          setCenter({ lat: 40.7128, lng: -74.006 });
         }
       );
     }
@@ -68,8 +69,9 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
         lat,
         lng,
       });
-    } catch (error) {
-      console.error("Error fetching geocode:", error);
+    } catch {
+      //console.error("Error fetching geocode:", error);
+      alert("Error fetching geocode");
     }
   };
 
@@ -93,8 +95,9 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
         lat,
         lng,
       });
-    } catch (error) {
-      console.error("Error reverse geocoding:", error);
+    } catch {
+      //console.error("Error reverse geocoding:", error);
+      alert("Error reverse geocoding");
     }
   };
 
@@ -120,7 +123,8 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
   
       setCenter({ lat, lng });
     } catch (error) {
-      console.error("Error reverse geocoding clicked location:", error);
+      //console.error("Error reverse geocoding clicked location:", error);
+      alert("Error reverse geocoding clicked location");
     }
   };
 
