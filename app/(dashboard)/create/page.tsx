@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { LocationPicker, FormData as LocationFormData } from "./locationPicker";
 
 // Deal type for the form
 type Deal = {
@@ -12,15 +13,14 @@ type Deal = {
   price: string;
   originalPrice?: string;
   category: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
+  address: string; // full formatted address from LocationPicker
+  lat: number;
+  lng: number;
   expiresIn?: string;
   tags: string[];
 };
 
-//dummy deals, only storing locally currently
+// Initial dummy deals
 const dummyDeals: Deal[] = [
   {
     id: 1,
@@ -29,35 +29,38 @@ const dummyDeals: Deal[] = [
     price: '$299',
     originalPrice: '$599',
     category: 'Electronics',
-    address: "123 Manhattan Ave",
-    city: "New York City",
-    state: "NY",
-    zipCode: "12345",
+    address: "123 Manhattan Ave, New York, NY 10001",
+    lat: 40.7128,
+    lng: -74.006,
     expiresIn: '2 days',
     tags: [],
   },
 ];
 
 export default function CreatePage() {
+  // Main form data (everything except location)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     price: '',
     originalPrice: '',
     category: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
     expiresIn: '',
     tags: [] as string[],
+  });
+
+  // Location state handled by LocationPicker
+  const [location, setLocation] = useState<LocationFormData>({
+    address: '',
+    lat: 0,
+    lng: 0,
   });
 
   const [tagInput, setTagInput] = useState('');
 
   const [deals, setDeals] = useState<Deal[]>(dummyDeals);
 
-  // Handle input changes
+  // Handle regular input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -66,12 +69,17 @@ export default function CreatePage() {
   // Handle form submit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Combine form data with location
     const newDeal: Deal = {
       id: deals.length + 1,
       ...formData,
+      address: location.address,
+      lat: location.lat,
+      lng: location.lng,
     };
-    setDeals(prev => [...prev, newDeal]);
 
+    setDeals(prev => [...prev, newDeal]);
     alert('Deal created!');
 
     // Reset form
@@ -81,13 +89,11 @@ export default function CreatePage() {
       price: '',
       originalPrice: '',
       category: '',
-      address: '',
-      city: '',
-      state: '',
-      zipCode: '',
       expiresIn: '',
       tags: [],
     });
+    setLocation({ address: '', lat: 0, lng: 0 });
+    setTagInput('');
   };
 
   return (
@@ -140,34 +146,10 @@ export default function CreatePage() {
           <option value="Retail">Retail</option>
           <option value="Grocery">Grocery</option>
         </select>
-        <Input
-          name="address"
-          placeholder="Street Address"
-          value={formData.address}
-          onChange={handleChange}
-          required
-        />
-        <Input
-          name="city"
-          placeholder="City"
-          value={formData.city}
-          onChange={handleChange}
-          required
-        />
-        <Input
-          name="state"
-          placeholder="State"
-          value={formData.state}
-          onChange={handleChange}
-          required
-        />
-        <Input
-          name="zipCode"
-          placeholder="Zip Code"
-          value={formData.zipCode}
-          onChange={handleChange}
-          required
-        />
+
+        {/* Location Picker */}
+        <LocationPicker formData={location} setFormData={setLocation} />
+
         <Input
           name="expiresIn"
           placeholder="Expires In"
@@ -175,9 +157,9 @@ export default function CreatePage() {
           onChange={handleChange}
         />
 
+        {/* Tags Section */}
         <div className="flex flex-col space-y-2">
           <label className="font-medium">Tags</label>
-
           <div className="flex space-x-2">
             <Input
               type="text"
@@ -189,7 +171,7 @@ export default function CreatePage() {
               type="button"
               onClick={() => {
                 if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-                  setFormData((prev) => ({
+                  setFormData(prev => ({
                     ...prev,
                     tags: [...prev.tags, tagInput.trim()],
                   }));
@@ -200,7 +182,6 @@ export default function CreatePage() {
               Add
             </Button>
           </div>
-
           <div className="flex flex-wrap gap-2 mt-2">
             {formData.tags.map((tag, index) => (
               <span
@@ -211,7 +192,7 @@ export default function CreatePage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setFormData((prev) => ({
+                    setFormData(prev => ({
                       ...prev,
                       tags: prev.tags.filter((_, i) => i !== index),
                     }))
@@ -239,7 +220,7 @@ export default function CreatePage() {
               <div className="font-semibold">{deal.title}</div>
               <div className="text-sm text-gray-600">{deal.price} — {deal.category}</div>
               <div className="text-xs text-gray-500">
-                {deal.address}, {deal.city}, {deal.state} {deal.zipCode}
+                {deal.address} ({deal.lat}, {deal.lng})
               </div>
               {deal.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
