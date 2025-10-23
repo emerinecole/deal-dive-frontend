@@ -11,8 +11,6 @@ export type FormData = {
   lng: number;
 };
 
-const libraries = ["places"] as ("places")[];
-
 interface LocationPickerProps {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
