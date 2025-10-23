@@ -33,7 +33,7 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
             lng: position.coords.longitude,
           });
         },
-        (error) => {
+        (_error) => {
           //console.error("Error getting current location:", error);
           setCenter({ lat: 40.7128, lng: -74.006 });
         }
@@ -122,7 +122,7 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
       });
   
       setCenter({ lat, lng });
-    } catch (error) {
+    } catch {
       //console.error("Error reverse geocoding clicked location:", error);
       alert("Error reverse geocoding clicked location");
     }
