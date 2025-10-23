@@ -24,6 +24,8 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
 
   const [center, setCenter] = useState({ lat: 40.7128, lng: -74.006 });
 
+  const [geoError, setGeoError] = useState(false);
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -33,8 +35,9 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
             lng: position.coords.longitude,
           });
         },
-        (_error) => {
+        (error) => {
           //console.error("Error getting current location:", error);
+          setGeoError(true);
           setCenter({ lat: 40.7128, lng: -74.006 });
         }
       );
