@@ -25,32 +25,13 @@ const Popup = dynamic(
   { ssr: false }
 );
 
-// Dummy data for deals
-const dummyDeals = [
-  {
-    id: 1,
-    title: "50% Off Electronics",
-    description: "Amazing deals on laptops and phones",
-    position: [40.7128, -74.0060] as [number, number], // New York
-    price: "$299",
-  },
-  {
-    id: 2,
-    title: "Restaurant Week Special",
-    description: "3-course meal for $35",
-    position: [40.7589, -73.9851] as [number, number], // Times Square
-    price: "$35",
-  },
-  {
-    id: 3,
-    title: "Gym Membership Deal",
-    description: "6 months for the price of 3",
-    position: [40.7505, -73.9934] as [number, number], // Midtown
-    price: "$150",
-  },
-];
+import { Deal } from "@/lib/types/deals";
 
-export default function MapView() {
+interface MapViewProps {
+  deals: Deal[];
+}
+
+export default function MapView({ deals }: MapViewProps) {
   const [isClient, setIsClient] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mapCenter, setMapCenter] = useState<[number, number]>([40.7128, -74.0060]);
@@ -139,13 +120,17 @@ export default function MapView() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {dummyDeals.map((deal) => (
-            <Marker key={deal.id} position={deal.position}>
+          {deals.map((deal) => (
+            <Marker key={deal.id} position={[deal.geom?.lat || 0, deal.geom?.lng || 0]}>
               <Popup>
                 <div className="p-2">
                   <h3 className="font-semibold">{deal.title}</h3>
                   <p className="text-sm text-muted-foreground">{deal.description}</p>
-                  <p className="font-bold text-green-600">{deal.price}</p>
+                  <p className="font-bold text-green-600">${deal.discounted_price}</p>
+                  {deal.original_price && (
+                    <p className="text-sm text-muted-foreground line-through">${deal.original_price}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">{deal.address}</p>
                 </div>
               </Popup>
             </Marker>
