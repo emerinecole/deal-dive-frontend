@@ -49,7 +49,7 @@ class APIClient {
     }
   }
 
-  async get(endpoint: string, params?: URLSearchParams): Promise<Response> {
+  async get<T>(endpoint: string, params?: URLSearchParams): Promise<T> {
     const headers = await this.getHeaders();
     const url = `${this.baseURL}${endpoint}${
       params ? `?${params.toString()}` : ""
@@ -59,11 +59,11 @@ class APIClient {
       method: "GET",
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response) as T;
   }
 
 
-  async post(endpoint: string, data?: unknown): Promise<Response> {
+  async post<T>(endpoint: string, data?: unknown): Promise<T> {
     const headers = await this.getHeaders();
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "POST",
@@ -71,7 +71,7 @@ class APIClient {
       body: data ? JSON.stringify(data) : undefined,
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response) as T;
   }
 
   async postStream(
@@ -91,7 +91,7 @@ class APIClient {
     return response.body;
   }
 
-  async put(endpoint: string, data?: unknown): Promise<Response> {
+  async put<T>(endpoint: string, data?: unknown): Promise<T> {
     const headers = await this.getHeaders();
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "PUT",
@@ -99,7 +99,7 @@ class APIClient {
       body: data ? JSON.stringify(data) : undefined,
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response) as T;
   }
 
   async delete(endpoint: string, params?: URLSearchParams): Promise<void> {

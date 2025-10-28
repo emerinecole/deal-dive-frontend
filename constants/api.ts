@@ -6,10 +6,11 @@ if (!BASE_URL) {
 
 export const API = {
   BASE_URL,
-  USER: {
-    LIST: "/user/list",
-    SIGNUP: "/user/signup",
-    ROLES: "/user/roles",
-    INVITE: "/user/invite",
-  }
-} as const;
+  DEALS: {
+    LIST: "/deals",
+    GET: (id: string) => `/deals/${id}`,
+    CREATE: "/deals",
+    UPDATE: (id: string) => `/deals/${id}`,
+    DELETE: (id: string) => `/deals/${id}`,
+  },
+};
