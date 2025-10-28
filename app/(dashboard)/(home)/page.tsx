@@ -20,7 +20,7 @@ export default function Home() {
         setDeals(dealsData);
       } catch (err) {
         setError('Failed to load deals');
-        console.error('Error fetching deals:', err);
+        alert('Error fetching deals: ' + err);
       } finally {
         setLoading(false);
       }

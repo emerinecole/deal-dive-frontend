@@ -66,7 +66,6 @@ export default function CreatePage() {
       };
 
       // Create the deal
-      console.log(JSON.stringify(dealData));
       await createDeal(dealData);
       
       
