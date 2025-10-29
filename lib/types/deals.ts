@@ -1,3 +1,5 @@
+import { UUID } from "crypto";
+
 export interface Deal {
   id: number;
   createdAt: string;
@@ -6,7 +8,7 @@ export interface Deal {
   original_price?: number;
   title: string;
   discounted_price: number;
-  created_by: number;
+  created_by: UUID;
   upvotes: number;
   downvotes: number;
   comment_count: number;
@@ -23,7 +25,7 @@ export interface CreateDealInput {
   discounted_price: number;
   original_price?: number;
   address: string;
-  created_by?: number;
+  created_by?: UUID;
   geom: null | {
     lat: number;
     lng: number;
@@ -52,5 +54,5 @@ export interface DealListParams {
   limit?: number;
   offset?: number;
   search?: string;
-  createdBy?: number;
+  createdBy?: UUID;
 }
