@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { LocationPicker, FormData as LocationFormData } from "./locationPicker";
 import { createDeal } from '@/lib/services/deal-service';
 import { CreateDealInput } from '@/lib/types/deals';
+//import { getUser } from '@/lib/supabase-auth';
+import { createClient } from '@/lib/supabase/client';
+import { UUID } from 'crypto';
 
 export default function CreatePage() {
   // Main form data (everything except location)
@@ -50,9 +53,13 @@ export default function CreatePage() {
       //   throw new Error('Please select a valid location');
       // }
 
+      // Read current user from Supabase (client-side)
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
       // Prepare deal data
       const dealData: CreateDealInput = {
-        //created_by: 1,
+        created_by: user?.id as UUID,
         title: formData.title,
         description: formData.description,
         discounted_price: parseFloat(formData.disountedPrice),
