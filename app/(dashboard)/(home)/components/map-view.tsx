@@ -45,7 +45,7 @@ export default function MapView({ deals }: MapViewProps) {
             setMapCenter({ lat, lng });
           },
           () => {
-            console.warn("Permission denied or unable to get location. Using default (UF).");
+            alert("Permission denied or unable to get location. Using default (UF).")
           }
         );
       }
@@ -82,8 +82,8 @@ export default function MapView({ deals }: MapViewProps) {
               const loc = results[0].geometry.location;
               resolvedDeals.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
             }
-          } catch (err) {
-            console.error("Failed to geocode deal:", deal.address, err);
+          } catch {
+            alert("Failed to geocode deal");
           }
         }
       }
