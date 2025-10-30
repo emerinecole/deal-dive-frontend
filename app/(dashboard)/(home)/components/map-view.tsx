@@ -46,7 +46,7 @@ export default function MapView({ deals }: MapViewProps) {
             setMapCenter({ lat, lng });
           },
           () => {
-            alert("Permission denied or unable to get location. Using default (UF).")
+            alert("Permission denied or unable to get location. Using default (UF).");
           }
         );
       }
@@ -84,7 +84,7 @@ export default function MapView({ deals }: MapViewProps) {
               resolvedDeals.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
             }
           } catch {
-            alert("Failed to geocode deal");
+            alert(`Failed to geocode address for ${deal.title}`);
           }
         }
       }
@@ -103,9 +103,10 @@ export default function MapView({ deals }: MapViewProps) {
       const results = await geocodeAddress(searchQuery);
       if (results.length > 0) {
         const loc = results[0].geometry.location;
-        setMapCenter({ lat: loc.lat(), lng: loc.lng() });
+        const newCenter = { lat: loc.lat(), lng: loc.lng() };
+        setMapCenter(newCenter);
         setMapZoom(14);
-        mapRef.current?.panTo({ lat: loc.lat(), lng: loc.lng() });
+        mapRef.current?.panTo(newCenter);
       } else {
         alert("Location not found.");
       }
@@ -162,16 +163,30 @@ export default function MapView({ deals }: MapViewProps) {
               position={{ lat: selectedDeal.lat, lng: selectedDeal.lng }}
               onCloseClick={() => setSelectedDeal(null)}
             >
-              <div className="p-2">
-                <h3 className="font-semibold">{selectedDeal.title}</h3>
-                <p className="text-sm text-muted-foreground">{selectedDeal.description}</p>
-                <p className="font-bold text-green-600">${selectedDeal.discounted_price}</p>
-                {selectedDeal.original_price && (
-                  <p className="text-sm text-muted-foreground line-through">
-                    ${selectedDeal.original_price}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">{selectedDeal.address}</p>
+              <div className="p-2 space-y-1 max-w-[220px]">
+                <h3 className="font-semibold text-base">{selectedDeal.title}</h3>
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {selectedDeal.description}
+                </p>
+                <div className="mt-1">
+                  <p className="font-bold text-green-600">${selectedDeal.discounted_price}</p>
+                  {selectedDeal.original_price && (
+                    <p className="text-xs text-muted-foreground line-through">
+                      ${selectedDeal.original_price}
+                    </p>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{selectedDeal.address}</p>
+
+                {/* "More Details" link */}
+                <div className="pt-1">
+                <Link
+                  href={`/deals/${selectedDeal.id}?from=map`}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2 inline-block"
+                >
+                  More Details →
+                </Link>
+                </div>
               </div>
             </InfoWindow>
           )}
