@@ -26,6 +26,7 @@ const Popup = dynamic(
 );
 
 import { Deal } from "@/lib/types/deals";
+import Link from "next/link";
 
 interface MapViewProps {
   deals: Deal[];
@@ -131,6 +132,11 @@ export default function MapView({ deals }: MapViewProps) {
                     <p className="text-sm text-muted-foreground line-through">${deal.original_price}</p>
                   )}
                   <p className="text-xs text-muted-foreground mt-1">{deal.address}</p>
+                  <div className="mt-2">
+                    <Link href={`/deals/${deal.id}`} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                      View Details →
+                    </Link>
+                  </div>
                 </div>
               </Popup>
             </Marker>

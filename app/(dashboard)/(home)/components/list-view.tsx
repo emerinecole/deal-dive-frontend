@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import { Deal } from "@/lib/types/deals";
 
 interface ListViewProps {
@@ -47,9 +48,9 @@ export default function ListView({ deals }: ListViewProps) {
                   {deal.comment_count} comments
                 </span>
               </div>
-              <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              <Link href={`/deals/${deal.id}`} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
                 View Details →
-              </button>
+              </Link>
             </div>
           </CardContent>
         </Card>
