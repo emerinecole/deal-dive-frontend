@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Deal } from "@/lib/types/deals";
+import Link from "next/link";
 
 interface MapViewProps {
   deals: Deal[];
