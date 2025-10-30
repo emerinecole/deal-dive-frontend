@@ -28,7 +28,7 @@ export default function DealDetailPage() {
         const data = await getDeal(id);
         setDeal(data);
       } catch (err) {
-        setError('Failed to load deal');
+        setError('Failed to load deal: ' + err);
         //console.error(err);
       } finally {
         setLoading(false);
