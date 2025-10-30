@@ -48,7 +48,10 @@ export default function ListView({ deals }: ListViewProps) {
                   {deal.comment_count} comments
                 </span>
               </div>
-              <Link href={`/deals/${deal.id}`} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              <Link
+                href={`/deals/${deal.id}?from=list`}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
                 View Details →
               </Link>
             </div>
