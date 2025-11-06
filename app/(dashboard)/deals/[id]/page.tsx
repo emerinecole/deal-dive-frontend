@@ -6,6 +6,7 @@ import { getDeal, updateDeal } from '@/lib/services/deal-service';
 import { Deal } from '@/lib/types/deals';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
 
 export default function DealDetailPage() {
   const params = useParams();
@@ -20,8 +21,13 @@ export default function DealDetailPage() {
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
   const [comment, setComment] = useState('');
   const [saved, setSaved] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
-  // Read "from" query param (map or list)
+  // Google Maps API loader
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+  });
+
   const from = searchParams.get('from') || 'list';
 
   useEffect(() => {
@@ -41,7 +47,6 @@ export default function DealDetailPage() {
   }, [id]);
 
   const handleBack = () => {
-    // Navigate back to home page with the correct tab
     if (from === 'map') router.push('/?tab=map');
     else router.push('/?tab=list');
   };
@@ -63,8 +68,20 @@ export default function DealDetailPage() {
     );
   }
 
+  // Determine map location (lat/lng first, then address)
+  const position = deal.latitude && deal.longitude
+    ? { lat: deal.latitude, lng: deal.longitude }
+    : null;
+
+  const directionsUrl = position
+    ? `https://www.google.com/maps/dir/?api=1&destination=${position.lat},${position.lng}`
+    : deal.address
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(deal.address)}`
+    : null;
+
   return (
     <div className="p-6 space-y-6">
+      {/* Title + price */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold">{deal.title}</h1>
@@ -89,12 +106,11 @@ export default function DealDetailPage() {
 
       <p className="text-sm text-muted-foreground">{deal.description}</p>
 
-      {/* Votes and comments */}
+      {/* Votes + comments */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <div className="text-xs uppercase text-muted-foreground">Votes</div>
           <div className="flex items-center gap-3">
-            {/* Upvote button logic unchanged */}
             <Button
               variant={userVote === 'up' ? 'default' : 'secondary'}
               size="sm"
@@ -128,7 +144,6 @@ export default function DealDetailPage() {
               👍 {deal.upvotes}
             </Button>
 
-            {/* Downvote button logic unchanged */}
             <Button
               variant={userVote === 'down' ? 'default' : 'secondary'}
               size="sm"
@@ -163,6 +178,7 @@ export default function DealDetailPage() {
             </Button>
           </div>
         </div>
+
         <div className="space-y-1">
           <div className="text-xs uppercase text-muted-foreground">Comments</div>
           <div className="text-sm">{deal.comment_count}</div>
@@ -182,13 +198,49 @@ export default function DealDetailPage() {
             variant="secondary"
             onClick={() => {
               setComment('');
-              // Placeholder — no backend call yet
             }}
           >
             Post
           </Button>
         </div>
       </div>
+
+      {/* Map with deal location/directions link */}
+      {isLoaded && (position || deal.address) ? (
+        <div className="w-full h-[300px] rounded-lg overflow-hidden shadow-md">
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={position ?? { lat: 0, lng: 0 }}
+            zoom={position ? 15 : 2}
+          >
+            {position && (
+              <>
+                <Marker position={position} onClick={() => setShowInfo(true)} />
+                {showInfo && (
+                  <InfoWindow position={position} onCloseClick={() => setShowInfo(false)}>
+                    <div className="text-sm space-y-1">
+                      <div className="font-semibold">{deal.title}</div>
+                      <div>{deal.address}</div>
+                      {directionsUrl && (
+                        <a
+                          href={directionsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          Get Directions
+                        </a>
+                      )}
+                    </div>
+                  </InfoWindow>
+                )}
+              </>
+            )}
+          </GoogleMap>
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-sm">No map location available</p>
+      )}
 
       {/* Back button */}
       <div>

@@ -37,8 +37,8 @@ export interface UpdateDealInput {
   upvotes?: number;
   downvotes?: number;
   comment_count?: number;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface DealListParams {
