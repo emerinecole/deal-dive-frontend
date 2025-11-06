@@ -41,12 +41,12 @@ export default function ListView({ deals }: ListViewProps) {
             <p className="text-sm text-muted-foreground mb-3">{deal.description}</p>
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                {/* <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                   {deal.upvotes} upvotes
                 </span>
                 <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">
                   {deal.comment_count} comments
-                </span>
+                </span> */}
               </div>
               <Link
                 href={`/deals/${deal.id}?from=list`}
