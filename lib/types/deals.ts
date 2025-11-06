@@ -12,10 +12,8 @@ export interface Deal {
   upvotes: number;
   downvotes: number;
   comment_count: number;
-  geom: null | {
-    lat: number;
-    lng: number;
-  };
+  latitude: number;
+  longitude: number;
   address: string;
 }
 
@@ -26,10 +24,8 @@ export interface CreateDealInput {
   original_price?: number;
   address: string;
   created_by?: UUID;
-  geom: null | {
-    lat: number;
-    lng: number;
-  };
+  latitude: number;
+  longitude: number;
 }
 
 export interface UpdateDealInput {
@@ -41,10 +37,8 @@ export interface UpdateDealInput {
   upvotes?: number;
   downvotes?: number;
   comment_count?: number;
-  geom?: {
-    lat: number;
-    lng: number;
-  };
+  latitude: number;
+  longitude: number;
 }
 
 export interface DealListParams {
