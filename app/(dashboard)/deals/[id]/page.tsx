@@ -30,6 +30,11 @@ export default function DealDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [userId, setUserId] = useState<UUID | null>(null);
+  
+  // Track counts from individual API calls
+  const [commentCount, setCommentCount] = useState(0);
+  const [upvoteCount, setUpvoteCount] = useState(0);
+  const [downvoteCount, setDownvoteCount] = useState(0);
 
   // Custom hooks for feature logic
   const voting = useVoting(deal, userId);
@@ -63,39 +68,63 @@ export default function DealDetailPage() {
     fetchDeal();
   }, [id]);
 
-  // Fetch comments and votes
+  // Fetch comments (always load, regardless of auth)
   useEffect(() => {
-    if (!id || !userId) return;
+    if (!id) return;
     
-    const fetchCommentsAndVotes = async () => {
+    const fetchComments = async () => {
       try {
-        const [commentsData, votesData] = await Promise.all([
-          getComments(id),
-          getVotes(id)
-        ]);
+        const commentsData = await getComments(id);
         
         // Ensure commentsData is an array
         if (Array.isArray(commentsData)) {
           commentsHook.setComments(commentsData);
+          setCommentCount(commentsData.length);
         } else {
           console.warn('Comments data is not an array:', commentsData);
           commentsHook.setComments([]);
-        }
-        
-        // Determine user's current vote
-        if (votesData?.votes && Array.isArray(votesData.votes)) {
-          const myVote = votesData.votes.find(v => v.userId === userId);
-          if (myVote) {
-            voting.setUserVote(myVote.voteType);
-          }
+          setCommentCount(0);
         }
       } catch (err) {
-        console.error('Failed to load comments/votes:', err);
+        console.error('Failed to load comments:', err);
         commentsHook.setComments([]);
+        setCommentCount(0);
       }
     };
     
-    fetchCommentsAndVotes();
+    fetchComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // Fetch votes (load counts regardless of auth, but user vote requires auth)
+  useEffect(() => {
+    if (!id) return;
+    
+    const fetchVotes = async () => {
+      try {
+        const votesData = await getVotes(id);
+        
+        // Calculate vote counts from the votes array
+        if (votesData?.votes && Array.isArray(votesData.votes)) {
+          const upvotes = votesData.votes.filter(v => v.vote_type === 1).length;
+          const downvotes = votesData.votes.filter(v => v.vote_type === -1).length;
+          setUpvoteCount(upvotes);
+          setDownvoteCount(downvotes);
+          
+          // Determine user's current vote (only if userId is available)
+          if (userId) {
+            const myVote = votesData.votes.find(v => v.user_id === userId);
+            if (myVote) {
+              voting.setUserVote(myVote.vote_type);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load votes:', err);
+      }
+    };
+    
+    fetchVotes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, userId]);
 
@@ -134,20 +163,21 @@ export default function DealDetailPage() {
       {/* Votes and comments count */}
       <div className="grid grid-cols-2 gap-4">
         <VotingSection
-          upvotes={deal.upvotes}
-          downvotes={deal.downvotes}
+          upvotes={upvoteCount}
+          downvotes={downvoteCount}
           userVote={voting.userVote}
           voteBusy={voting.voteBusy}
           disabled={!userId}
           onVote={(voteType) => {
-            voting.handleVote(voteType, (upvotes, downvotes) => {
-              setDeal({ ...deal, upvotes, downvotes });
+            voting.handleVote(voteType, upvoteCount, downvoteCount, (upvotes, downvotes) => {
+              setUpvoteCount(upvotes);
+              setDownvoteCount(downvotes);
             });
           }}
         />
         <div className="space-y-1">
           <div className="text-xs uppercase text-muted-foreground">Comments</div>
-          <div className="text-sm">{deal.comment_count}</div>
+          <div className="text-sm">{commentCount}</div>
         </div>
       </div>
 
@@ -159,12 +189,12 @@ export default function DealDetailPage() {
         onCommentChange={commentsHook.setComment}
         onAddComment={() => {
           commentsHook.handleAddComment((count) => {
-            setDeal({ ...deal, comment_count: count });
+            setCommentCount(count);
           });
         }}
-        onDeleteComment={(commentId) => {
+        onDeleteComment={(commentId: string) => {
           commentsHook.handleDeleteComment(commentId, (count) => {
-            setDeal({ ...deal, comment_count: count });
+            setCommentCount(count);
           });
         }}
       />

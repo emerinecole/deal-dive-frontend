@@ -10,7 +10,7 @@ interface CommentSectionProps {
   userId: UUID | null;
   onCommentChange: (value: string) => void;
   onAddComment: () => void;
-  onDeleteComment: (commentId: number) => void;
+  onDeleteComment: (commentId: string) => void;
 }
 
 export function CommentSection({
@@ -59,7 +59,7 @@ export function CommentSection({
               <div key={c.id} className="border rounded-lg p-3 space-y-2">
                 <div className="flex justify-between items-start">
                   <p className="text-sm">{c.content}</p>
-                  {userId === c.userId && (
+                  {userId === c.user_id && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -71,7 +71,7 @@ export function CommentSection({
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(c.createdAt).toLocaleDateString()} at {new Date(c.createdAt).toLocaleTimeString()}
+                  {new Date(c.created_at).toLocaleDateString()} at {new Date(c.created_at).toLocaleTimeString()}
                 </p>
               </div>
             ))}

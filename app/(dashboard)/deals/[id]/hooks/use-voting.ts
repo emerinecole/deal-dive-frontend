@@ -8,7 +8,12 @@ export function useVoting(deal: Deal | null, userId: UUID | null) {
   const [voteBusy, setVoteBusy] = useState(false);
   const [userVote, setUserVote] = useState<VoteType | null>(null);
 
-  const handleVote = async (voteType: VoteType, onUpdate: (upvotes: number, downvotes: number) => void) => {
+  const handleVote = async (
+    voteType: VoteType, 
+    currentUpvotes: number,
+    currentDownvotes: number,
+    onUpdate: (upvotes: number, downvotes: number) => void
+  ) => {
     if (!deal || !userId) return;
     
     setVoteBusy(true);
@@ -20,9 +25,9 @@ export function useVoting(deal: Deal | null, userId: UUID | null) {
         
         // Update local counts
         if (voteType === 1) {
-          onUpdate(Math.max(0, deal.upvotes - 1), deal.downvotes);
+          onUpdate(Math.max(0, currentUpvotes - 1), currentDownvotes);
         } else {
-          onUpdate(deal.upvotes, Math.max(0, deal.downvotes - 1));
+          onUpdate(currentUpvotes, Math.max(0, currentDownvotes - 1));
         }
       } else {
         // If switching votes or adding new vote
@@ -36,8 +41,8 @@ export function useVoting(deal: Deal | null, userId: UUID | null) {
         setUserVote(voteType);
         
         // Update local counts
-        let newUpvotes = deal.upvotes;
-        let newDownvotes = deal.downvotes;
+        let newUpvotes = currentUpvotes;
+        let newDownvotes = currentDownvotes;
         
         if (userVote === 1) {
           newUpvotes = Math.max(0, newUpvotes - 1);

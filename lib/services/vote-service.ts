@@ -11,7 +11,8 @@ export async function removeVote(dealId: string, voteData: RemoveVoteInput): Pro
 }
 
 export async function getVotes(dealId: string): Promise<VotesResponse> {
-  const response = await apiClient.get(API.VOTES.GET(dealId));
-  return response as VotesResponse;
+  const response = await apiClient.get(API.VOTES.GET(dealId)) as VotesResponse;
+  // Return the response as-is, it already has the correct structure
+  return response;
 }
 

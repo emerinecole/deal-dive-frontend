@@ -3,12 +3,13 @@ import { UUID } from "crypto";
 // Backend expects: 1 for upvote, -1 for downvote (or 0)
 export type VoteType = 1 | -1;
 
+// API response format (snake_case)
 export interface Vote {
-  id: number;
-  dealId: number;
-  userId: UUID;
-  voteType: VoteType;
-  createdAt: string;
+  id: string;
+  deal_id: string;
+  user_id: UUID;
+  vote_type: VoteType;
+  created_at: string;
 }
 
 export interface AddVoteInput {
@@ -21,8 +22,7 @@ export interface RemoveVoteInput {
 }
 
 export interface VotesResponse {
-  upvotes: number;
-  downvotes: number;
+  count: number;
   votes: Vote[];
 }
 

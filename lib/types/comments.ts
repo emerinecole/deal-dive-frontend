@@ -1,12 +1,12 @@
 import { UUID } from "crypto";
 
+// API response format (snake_case)
 export interface Comment {
-  id: number;
-  dealId: number;
-  userId: UUID;
+  id: string;
+  deal_id: string;
+  user_id: UUID;
   content: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
 }
 
 export interface AddCommentInput {
@@ -16,5 +16,10 @@ export interface AddCommentInput {
 
 export interface DeleteCommentInput {
   userId: UUID;
+}
+
+export interface CommentsResponse {
+  count: number;
+  comments: Comment[];
 }
 

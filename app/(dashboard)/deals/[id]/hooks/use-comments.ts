@@ -33,11 +33,11 @@ export function useComments(dealId: string | undefined, userId: UUID | null) {
     }
   };
 
-  const handleDeleteComment = async (commentId: number, onUpdate: (count: number) => void) => {
+  const handleDeleteComment = async (commentId: string, onUpdate: (count: number) => void) => {
     if (!userId) return;
     
     try {
-      await deleteComment(String(commentId), { userId });
+      await deleteComment(commentId, { userId });
       
       // Ensure comments is an array before filtering
       const currentComments = Array.isArray(comments) ? comments : [];
