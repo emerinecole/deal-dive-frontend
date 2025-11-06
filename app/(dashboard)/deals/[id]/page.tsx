@@ -18,6 +18,8 @@ import { VotingSection } from './components/voting-section';
 import { CommentSection } from './components/comment-section';
 import { ReportDialog } from './components/report-dialog';
 
+import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+
 export default function DealDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -30,28 +32,28 @@ export default function DealDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [userId, setUserId] = useState<UUID | null>(null);
-  
-  // Track counts from individual API calls
+
   const [commentCount, setCommentCount] = useState(0);
   const [upvoteCount, setUpvoteCount] = useState(0);
   const [downvoteCount, setDownvoteCount] = useState(0);
+  const [position, setPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
 
-  // Custom hooks for feature logic
   const voting = useVoting(deal, userId);
   const commentsHook = useComments(id, userId);
   const reporting = useReporting(id, userId);
 
-  // Get current user
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+  });
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        setUserId(data.user.id as UUID);
-      }
+      if (data.user) setUserId(data.user.id as UUID);
     });
   }, []);
 
-  // Fetch deal data
   useEffect(() => {
     if (!id) return;
     const fetchDeal = async () => {
@@ -59,6 +61,27 @@ export default function DealDetailPage() {
         setLoading(true);
         const data = await getDeal(id);
         setDeal(data);
+
+        // Determine map position
+        if (data.latitude && data.longitude) {
+          setPosition({ lat: data.latitude, lng: data.longitude });
+        } else if (data.address) {
+          // Reverse geocode the address
+          const geocodeRes = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+              data.address
+            )}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+          );
+          const geocodeData = await geocodeRes.json();
+          if (geocodeData.status === 'OK' && geocodeData.results.length > 0) {
+            const loc = geocodeData.results[0].geometry.location;
+            setPosition({ lat: loc.lat, lng: loc.lng });
+          } else {
+            setPosition(null);
+          }
+        } else {
+          setPosition(null);
+        }
       } catch (err) {
         setError('Failed to load deal: ' + err);
       } finally {
@@ -68,99 +91,76 @@ export default function DealDetailPage() {
     fetchDeal();
   }, [id]);
 
-  // Fetch comments (always load, regardless of auth)
   useEffect(() => {
     if (!id) return;
-    
+
     const fetchComments = async () => {
       try {
         const commentsData = await getComments(id);
-        
-        // Ensure commentsData is an array
         if (Array.isArray(commentsData)) {
           commentsHook.setComments(commentsData);
           setCommentCount(commentsData.length);
         } else {
-          throw new Error('Comments data is not an array:' + commentsData);
           commentsHook.setComments([]);
           setCommentCount(0);
         }
-      } catch (err) {
-        throw new Error('Failed to load comments:' + err);
+      } catch {
         commentsHook.setComments([]);
         setCommentCount(0);
       }
     };
-    
-    fetchComments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
 
-  // Fetch votes (load counts regardless of auth, but user vote requires auth)
+    fetchComments();
+  }, [id, commentsHook]);
+
   useEffect(() => {
     if (!id) return;
-    
+
     const fetchVotes = async () => {
       try {
         const votesData = await getVotes(id);
-        
-        // Calculate vote counts from the votes array
         if (votesData?.votes && Array.isArray(votesData.votes)) {
           const upvotes = votesData.votes.filter(v => v.vote_type === 1).length;
           const downvotes = votesData.votes.filter(v => v.vote_type === -1).length;
           setUpvoteCount(upvotes);
           setDownvoteCount(downvotes);
-          
-          // Determine user's current vote (only if userId is available)
+
           if (userId) {
             const myVote = votesData.votes.find(v => v.user_id === userId);
-            if (myVote) {
-              voting.setUserVote(myVote.vote_type);
-            }
+            if (myVote) voting.setUserVote(myVote.vote_type);
           }
         }
-      } catch (err) {
-        throw new Error('Failed to load votes:' + err);
-      }
+      } catch {}
     };
-    
+
     fetchVotes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, userId]);
+  }, [id, userId, voting]);
 
   const handleBack = () => {
     if (from === 'map') router.push('/?tab=map');
     else router.push('/?tab=list');
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <p className="text-muted-foreground">Loading deal...</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading deal...</p></div>;
+  if (error || !deal) return (
+    <div className="p-6 space-y-4">
+      <p className="text-red-500">{error ?? 'Deal not found'}</p>
+      <Button variant="secondary" onClick={handleBack}>Go Back</Button>
+    </div>
+  );
 
-  if (error || !deal) {
-    return (
-      <div className="p-6 space-y-4">
-        <p className="text-red-500">{error ?? 'Deal not found'}</p>
-        <Button variant="secondary" onClick={handleBack}>Go Back</Button>
-      </div>
-    );
-  }
+  const directionsUrl = position
+    ? `https://www.google.com/maps/dir/?api=1&destination=${position.lat},${position.lng}`
+    : deal.address
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(deal.address)}`
+    : null;
 
   return (
     <div className="p-6 space-y-6">
-      <DealHeader
-        deal={deal}
-        saved={saved}
-        onSaveToggle={() => setSaved((s) => !s)}
-      />
+      <DealHeader deal={deal} saved={saved} onSaveToggle={() => setSaved((s) => !s)} />
 
       <p className="text-sm text-muted-foreground">{deal.description}</p>
 
-      {/* Votes and comments count */}
       <div className="grid grid-cols-2 gap-4">
         <VotingSection
           upvotes={upvoteCount}
@@ -169,9 +169,9 @@ export default function DealDetailPage() {
           voteBusy={voting.voteBusy}
           disabled={!userId}
           onVote={(voteType) => {
-            voting.handleVote(voteType, upvoteCount, downvoteCount, (upvotes, downvotes) => {
-              setUpvoteCount(upvotes);
-              setDownvoteCount(downvotes);
+            voting.handleVote(voteType, upvoteCount, downvoteCount, (up, down) => {
+              setUpvoteCount(up);
+              setDownvoteCount(down);
             });
           }}
         />
@@ -187,28 +187,13 @@ export default function DealDetailPage() {
         commentsBusy={commentsHook.commentsBusy}
         userId={userId}
         onCommentChange={commentsHook.setComment}
-        onAddComment={() => {
-          commentsHook.handleAddComment((count) => {
-            setCommentCount(count);
-          });
-        }}
-        onDeleteComment={(commentId: string) => {
-          commentsHook.handleDeleteComment(commentId, (count) => {
-            setCommentCount(count);
-          });
-        }}
+        onAddComment={() => commentsHook.handleAddComment((count) => setCommentCount(count))}
+        onDeleteComment={(commentId) => commentsHook.handleDeleteComment(commentId, (count) => setCommentCount(count))}
       />
 
-      {/* Action buttons */}
       <div className="flex gap-3">
-        <Button variant="secondary" onClick={handleBack}>
-          Back
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => reporting.setShowReportDialog(true)}
-          disabled={!userId}
-        >
+        <Button variant="secondary" onClick={handleBack}>Back</Button>
+        <Button variant="outline" onClick={() => reporting.setShowReportDialog(true)} disabled={!userId}>
           Report Deal
         </Button>
       </div>
@@ -224,6 +209,34 @@ export default function DealDetailPage() {
           reporting.setReportReason('');
         }}
       />
+
+      {/* Map of individual deal*/}
+      {isLoaded && position ? (
+        <div className="w-full h-[300px] rounded-lg overflow-hidden shadow-md mt-6">
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={position}
+            zoom={15}
+          >
+            <Marker position={position} onClick={() => setShowInfo(true)} />
+            {showInfo && (
+              <InfoWindow position={position} onCloseClick={() => setShowInfo(false)}>
+                <div className="text-sm space-y-1">
+                  <div className="font-semibold">{deal.title}</div>
+                  {deal.address && <div>{deal.address}</div>}
+                  {directionsUrl && (
+                    <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                      Get Directions
+                    </a>
+                  )}
+                </div>
+              </InfoWindow>
+            )}
+          </GoogleMap>
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-sm mt-2">No map location available</p>
+      )}
     </div>
   );
 }
