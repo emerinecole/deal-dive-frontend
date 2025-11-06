@@ -59,7 +59,7 @@ export function useVoting(deal: Deal | null, userId: UUID | null) {
         onUpdate(newUpvotes, newDownvotes);
       }
     } catch (err) {
-      console.error('Failed to vote:', err);
+      throw new Error('Failed to vote:' + err);
       alert('Failed to vote. Please try again.');
     } finally {
       setVoteBusy(false);

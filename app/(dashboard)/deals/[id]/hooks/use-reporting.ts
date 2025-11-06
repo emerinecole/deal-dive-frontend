@@ -20,7 +20,7 @@ export function useReporting(dealId: string | undefined, userId: UUID | null) {
       setReportReason('');
       alert('Report submitted successfully.');
     } catch (err) {
-      console.error('Failed to report deal:', err);
+      throw new Error('Failed to report deal:' + err);
       alert('Failed to submit report. Please try again.');
     } finally {
       setReportBusy(false);

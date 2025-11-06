@@ -17,7 +17,6 @@ export function useComments(dealId: string | undefined, userId: UUID | null) {
         userId,
         content: comment.trim()
       });
-      console.log('Comment added successfully:', newComment);
       
       // Ensure comments is an array before spreading
       const currentComments = Array.isArray(comments) ? comments : [];
@@ -25,9 +24,7 @@ export function useComments(dealId: string | undefined, userId: UUID | null) {
       setComment('');
       onUpdate(currentComments.length + 1);
     } catch (err) {
-      console.error('Failed to add comment:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      alert(`Failed to add comment: ${errorMessage}`);
+      throw new Error('Failed to add comment:' + err);
     } finally {
       setCommentsBusy(false);
     }
@@ -45,8 +42,7 @@ export function useComments(dealId: string | undefined, userId: UUID | null) {
       setComments(newComments);
       onUpdate(Math.max(0, newComments.length));
     } catch (err) {
-      console.error('Failed to delete comment:', err);
-      alert('Failed to delete comment. Please try again.');
+      throw new Error('Failed to delete comment:' + err);
     }
   };
 

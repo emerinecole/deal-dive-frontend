@@ -81,12 +81,12 @@ export default function DealDetailPage() {
           commentsHook.setComments(commentsData);
           setCommentCount(commentsData.length);
         } else {
-          console.warn('Comments data is not an array:', commentsData);
+          throw new Error('Comments data is not an array:' + commentsData);
           commentsHook.setComments([]);
           setCommentCount(0);
         }
       } catch (err) {
-        console.error('Failed to load comments:', err);
+        throw new Error('Failed to load comments:' + err);
         commentsHook.setComments([]);
         setCommentCount(0);
       }
@@ -120,7 +120,7 @@ export default function DealDetailPage() {
           }
         }
       } catch (err) {
-        console.error('Failed to load votes:', err);
+        throw new Error('Failed to load votes:' + err);
       }
     };
     
