@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getSession } from "@/lib/supabase-auth";
+import LogoutButton from "@/components/ui/logout-button";
 
 const navigationItems = [
   {
@@ -178,14 +179,7 @@ export default async function DashboardLayout({
                     asChild
                     className="cursor-pointer rounded-lg text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors"
                   >
-                    <form action="/auth/logout" method="post">
-                      <button
-                        type="submit"
-                        className="flex w-full items-center gap-2"
-                      >
-                        <span>Log out</span>
-                      </button>
-                    </form>
+                    <LogoutButton />
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
