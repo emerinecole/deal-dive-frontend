@@ -42,7 +42,7 @@ export default function MapView({ deals }: MapViewProps) {
             setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           },
           () => {
-            console.warn("Permission denied or unable to get location. Using default center.");
+            alert("Permission denied or unable to get location. Using default center.");
           }
         );
       }
@@ -80,8 +80,8 @@ export default function MapView({ deals }: MapViewProps) {
               const loc = results[0].geometry.location;
               resolved.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
             }
-          } catch (error) {
-            console.warn(`Failed to geocode ${deal.title}:`, error);
+          } catch {
+            alert(`Failed to geocode ${deal.title}:`);
           }
         }
       }
