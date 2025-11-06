@@ -20,20 +20,18 @@ interface DealWithCoords extends Deal {
 export default function MapView({ deals }: MapViewProps) {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    libraries: ["places"] as ("places")[],
+    libraries: ["places"],
   });
 
-  // University of Florida default location
   const UF_COORDS = { lat: 29.6535, lng: -82.3388 };
-
   const [mapCenter, setMapCenter] = useState(UF_COORDS);
   const [mapZoom, setMapZoom] = useState(13);
   const [markers, setMarkers] = useState<DealWithCoords[]>([]);
-  const [selectedDeal, setSelectedDeal] = useState<DealWithCoords | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDealGroup, setSelectedDealGroup] = useState<DealWithCoords[] | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  // Set initial map center based on user's location if permission is granted
+  // Try to center map on user's current location
   useEffect(() => {
     if (!navigator.geolocation || !navigator.permissions) return;
 
@@ -41,19 +39,17 @@ export default function MapView({ deals }: MapViewProps) {
       if (status.state === "granted" || status.state === "prompt") {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            setMapCenter({ lat, lng });
+            setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           },
           () => {
-            alert("Permission denied or unable to get location. Using default (UF).");
+            alert("Permission denied or unable to get location. Using default center.");
           }
         );
       }
     });
   }, []);
 
-  // Helper function to geocode an address
+  // Reverse geocoding helper
   const geocodeAddress = (address: string): Promise<google.maps.GeocoderResult[]> => {
     return new Promise((resolve, reject) => {
       const geocoder = new google.maps.Geocoder();
@@ -64,38 +60,47 @@ export default function MapView({ deals }: MapViewProps) {
     });
   };
 
-  // Geocode deals (ignore empty addresses)
+  // Prepare markers — prefer lat/lng, fallback to geocode, skip if both missing
   useEffect(() => {
     if (!isLoaded || !deals.length) return;
 
-    const geocodeDeals = async () => {
-      const resolvedDeals: DealWithCoords[] = [];
+    const resolveDeals = async () => {
+      const resolved: DealWithCoords[] = [];
 
       for (const deal of deals) {
-        if (!deal.address?.trim()) continue;
+        if (deal.latitude && deal.longitude) {
+          resolved.push({ ...deal, lat: deal.latitude, lng: deal.longitude });
+          continue;
+        }
 
-        if (deal.geom?.lat && deal.geom?.lng) {
-          resolvedDeals.push({ ...deal, lat: deal.geom.lat, lng: deal.geom.lng });
-        } else {
+        if (deal.address?.trim()) {
           try {
             const results = await geocodeAddress(deal.address);
             if (results.length > 0) {
               const loc = results[0].geometry.location;
-              resolvedDeals.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
+              resolved.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
             }
           } catch {
-            alert(`Failed to geocode address for ${deal.title}`);
+            alert(`Failed to geocode ${deal.title}:`);
           }
         }
       }
 
-      setMarkers(resolvedDeals);
+      setMarkers(resolved);
     };
 
-    geocodeDeals();
+    resolveDeals();
   }, [isLoaded, deals]);
 
-  // Search functionality
+  // Group deals by same location
+  const groupedMarkers = markers.reduce((groups, deal) => {
+    const key = `${deal.lat.toFixed(6)},${deal.lng.toFixed(6)}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(deal);
+    return groups;
+  }, {} as Record<string, DealWithCoords[]>);
+
+  // Search location by address
   const handleSearch = async () => {
     if (!searchQuery.trim() || !isLoaded) return;
 
@@ -150,43 +155,55 @@ export default function MapView({ deals }: MapViewProps) {
           zoom={mapZoom}
           mapContainerStyle={{ width: "100%", height: "100%" }}
         >
-          {markers.map((deal) => (
-            <Marker
-              key={deal.id}
-              position={{ lat: deal.lat, lng: deal.lng }}
-              onClick={() => setSelectedDeal(deal)}
-            />
-          ))}
+          {/* Render grouped markers */}
+          {Object.entries(groupedMarkers).map(([key, dealsAtLocation]) => {
+            const { lat, lng } = dealsAtLocation[0];
+            return (
+              <Marker
+                key={key}
+                position={{ lat, lng }}
+                onClick={() => setSelectedDealGroup(dealsAtLocation)}
+              />
+            );
+          })}
 
-          {selectedDeal && (
+          {/* InfoWindow with list of all deals */}
+          {selectedDealGroup && (
             <InfoWindow
-              position={{ lat: selectedDeal.lat, lng: selectedDeal.lng }}
-              onCloseClick={() => setSelectedDeal(null)}
+              position={{
+                lat: selectedDealGroup[0].lat,
+                lng: selectedDealGroup[0].lng,
+              }}
+              onCloseClick={() => setSelectedDealGroup(null)}
             >
-              <div className="p-2 space-y-1 max-w-[220px]">
-                <h3 className="font-semibold text-base">{selectedDeal.title}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {selectedDeal.description}
-                </p>
-                <div className="mt-1">
-                  <p className="font-bold text-green-600">${selectedDeal.discounted_price}</p>
-                  {selectedDeal.original_price && (
-                    <p className="text-xs text-muted-foreground line-through">
-                      ${selectedDeal.original_price}
+              <div className="p-2 space-y-2 max-w-[240px]">
+                {selectedDealGroup.map((deal) => (
+                  <div
+                    key={deal.id}
+                    className="border-b pb-1 last:border-none last:pb-0"
+                  >
+                    <h4 className="font-medium text-sm">{deal.title}</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {deal.description}
                     </p>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">{selectedDeal.address}</p>
-
-                {/* "More Details" link */}
-                <div className="pt-1">
-                <Link
-                  href={`/deals/${selectedDeal.id}?from=map`}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2 inline-block"
-                >
-                  More Details →
-                </Link>
-                </div>
+                    <div className="mt-1 flex items-center justify-between">
+                      <p className="font-bold text-green-600 text-sm">
+                        ${deal.discounted_price}
+                      </p>
+                      {deal.original_price && (
+                        <p className="text-xs text-muted-foreground line-through">
+                          ${deal.original_price}
+                        </p>
+                      )}
+                    </div>
+                    <Link
+                      href={`/deals/${deal.id}?from=map`}
+                      className="text-blue-600 hover:text-blue-800 text-xs font-medium mt-1 inline-block"
+                    >
+                      More Details →
+                    </Link>
+                  </div>
+                ))}
               </div>
             </InfoWindow>
           )}

@@ -71,7 +71,8 @@ export default function CreatePage() {
         discounted_price: parseFloat(formData.discountedPrice),
         original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
         address: location.address,
-        geom: null,
+        latitude: location.lat,
+        longitude: location.lng,
       };
 
       await createDeal(dealData);
