@@ -25,7 +25,7 @@ export default function SignupSocialAuth() {
     <div className="space-y-3">
       <Button
         variant="outline"
-        className="w-full h-12 rounded-xl border-border/50 hover:bg-accent/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        className="w-full h-12 rounded-xl border border-blue-300 hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center"
         onClick={handleGoogleSignIn}
       >
         <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -34,16 +34,16 @@ export default function SignupSocialAuth() {
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
         </svg>
-        Continue with Google
+        <span className="text-blue-900 font-medium">Continue with Google</span>
       </Button>
       
       <Button
         variant="outline"
-        className="w-full h-12 rounded-xl border-border/50 hover:bg-accent/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        className="w-full h-12 rounded-xl border border-blue-300 hover:bg-blue-50 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center"
         onClick={handleGithubSignIn}
       >
-        <Github className="w-5 h-5 mr-2" />
-        Continue with GitHub
+        <Github className="w-5 h-5 mr-2 text-blue-500" />
+        <span className="text-blue-900 font-medium">Continue with GitHub</span>
       </Button>
     </div>
   );

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -53,7 +53,6 @@ export default function SignupForm() {
       });
       
       setSuccess(true);
-      // Redirect to home page after successful signup
       setTimeout(() => {
         router.push(APP_ROUTES.HOME);
       }, 2000);
@@ -69,16 +68,16 @@ export default function SignupForm() {
     <>
       {/* Success Message */}
       {success && (
-        <div className="mb-6 bg-gradient-to-r from-secondary/20 to-secondary/10 border-2 border-secondary/30 rounded-2xl p-6 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="mb-6 bg-blue-50/60 border border-blue-300 rounded-2xl p-6 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
-              <CheckCircle2 className="h-6 w-6 text-secondary" />
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+              <CheckCircle2 className="h-6 w-6 text-blue-600" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-bold text-lg text-secondary">
+              <h3 className="font-bold text-lg text-blue-900">
                 Account Created! 🎉
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-blue-700/80">
                 Check your email to verify your account. Redirecting...
               </p>
             </div>
@@ -88,14 +87,14 @@ export default function SignupForm() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 bg-destructive/10 border-2 border-destructive/30 rounded-2xl p-6 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="mb-6 bg-red-50/60 border border-red-300 rounded-2xl p-6 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-destructive/20 flex items-center justify-center">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
             </div>
             <div className="space-y-1">
-              <h3 className="font-bold text-lg text-destructive">Oops!</h3>
-              <p className="text-sm text-muted-foreground">{error}</p>
+              <h3 className="font-bold text-lg text-red-600">Oops!</h3>
+              <p className="text-sm text-blue-700/80">{error}</p>
             </div>
           </div>
         </div>
@@ -103,9 +102,9 @@ export default function SignupForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="fullName" className="flex items-center gap-2 text-sm font-semibold">
-            <User className="h-4 w-4 text-primary" />
-            Full Name <span className="text-destructive">*</span>
+          <label htmlFor="fullName" className="flex items-center gap-2 text-sm font-semibold text-blue-900">
+            <User className="h-4 w-4 text-blue-600" />
+            Full Name <span className="text-red-600">*</span>
           </label>
           <Input
             id="fullName"
@@ -116,14 +115,14 @@ export default function SignupForm() {
             onChange={handleInputChange}
             required
             disabled={isLoading}
-            className="h-12 text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all"
+            className="h-12 text-base rounded-xl border border-blue-200 focus-visible:ring-blue-300 transition-all"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="email" className="flex items-center gap-2 text-sm font-semibold">
-            <Mail className="h-4 w-4 text-primary" />
-            Email <span className="text-destructive">*</span>
+          <label htmlFor="email" className="flex items-center gap-2 text-sm font-semibold text-blue-900">
+            <Mail className="h-4 w-4 text-blue-600" />
+            Email <span className="text-red-600">*</span>
           </label>
           <Input
             id="email"
@@ -134,14 +133,14 @@ export default function SignupForm() {
             onChange={handleInputChange}
             required
             disabled={isLoading}
-            className="h-12 text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all"
+            className="h-12 text-base rounded-xl border border-blue-200 focus-visible:ring-blue-300 transition-all"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="password" className="flex items-center gap-2 text-sm font-semibold">
-            <Lock className="h-4 w-4 text-primary" />
-            Password <span className="text-destructive">*</span>
+          <label htmlFor="password" className="flex items-center gap-2 text-sm font-semibold text-blue-900">
+            <Lock className="h-4 w-4 text-blue-600" />
+            Password <span className="text-red-600">*</span>
           </label>
           <Input
             id="password"
@@ -152,14 +151,14 @@ export default function SignupForm() {
             onChange={handleInputChange}
             required
             disabled={isLoading}
-            className="h-12 text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all"
+            className="h-12 text-base rounded-xl border border-blue-200 focus-visible:ring-blue-300 transition-all"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="confirmPassword" className="flex items-center gap-2 text-sm font-semibold">
-            <Lock className="h-4 w-4 text-primary" />
-            Confirm Password <span className="text-destructive">*</span>
+          <label htmlFor="confirmPassword" className="flex items-center gap-2 text-sm font-semibold text-blue-900">
+            <Lock className="h-4 w-4 text-blue-600" />
+            Confirm Password <span className="text-red-600">*</span>
           </label>
           <Input
             id="confirmPassword"
@@ -170,7 +169,7 @@ export default function SignupForm() {
             onChange={handleInputChange}
             required
             disabled={isLoading}
-            className="h-12 text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all"
+            className="h-12 text-base rounded-xl border border-blue-200 focus-visible:ring-blue-300 transition-all"
           />
         </div>
 
@@ -179,20 +178,20 @@ export default function SignupForm() {
           disabled={isLoading}
           className={cn(
             "w-full h-12 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] mt-6",
-            "bg-gradient-to-r from-primary via-primary to-secondary hover:from-primary/90 hover:to-secondary/90",
-            "shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            "bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:to-blue-700",
+            "shadow-lg shadow-blue-200/30 disabled:opacity-50 disabled:cursor-not-allowed"
           )}
         >
           {isLoading ? (
             <>
-              <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
+              <div className="h-4 w-4 border-2 border-blue-200/30 border-t-blue-900 rounded-full animate-spin mr-2" />
               Creating Account...
             </>
           ) : (
             <>
-              <Sparkles className="mr-2 h-4 w-4" />
+              <Sparkles className="mr-2 h-4 w-4 text-white" />
               Create Account
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-4 w-4 text-white" />
             </>
           )}
         </Button>
