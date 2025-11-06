@@ -4,27 +4,28 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { LocationPicker, FormData as LocationFormData } from "./locationPicker";
+import { LocationPicker, FormData as LocationFormData } from './locationPicker';
 import { createDeal } from '@/lib/services/deal-service';
 import { CreateDealInput } from '@/lib/types/deals';
 import { createClient } from '@/lib/supabase/client';
 import { UUID } from 'crypto';
-import { 
-  Sparkles, 
-  DollarSign, 
-  MapPin, 
-  FileText, 
-  Tag, 
+import {
+  Sparkles,
+  DollarSign,
+  MapPin,
+  FileText,
+  Tag,
   CheckCircle2,
-  Zap,
   Gift,
   ArrowRight,
   ArrowLeft,
-  Check
+  Check,
+  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function CreatePage() {
+  // State management
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -43,6 +44,7 @@ export default function CreatePage() {
   const [success, setSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
+  // Form handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -160,7 +162,7 @@ export default function CreatePage() {
             Create Your Deal
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Help your community save money by sharing amazing local deals
+            {"Help your community save money by sharing amazing local deals"}
           </p>
         </div>
 
@@ -214,9 +216,11 @@ export default function CreatePage() {
                 <CheckCircle2 className="h-6 w-6 text-secondary" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-lg text-secondary">Deal Created Successfully! 🎉</h3>
+                <h3 className="font-bold text-lg text-secondary">
+                  {"Deal Created Successfully! 🎉"}
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  Your deal is now live and helping the community save money!
+                  {"Your deal is now live and helping the community save money!"}
                 </p>
               </div>
             </div>
@@ -231,7 +235,7 @@ export default function CreatePage() {
                 <span className="text-2xl">⚠️</span>
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-lg text-destructive">Oops!</h3>
+                <h3 className="font-bold text-lg text-destructive">{"Oops!"}</h3>
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
             </div>
@@ -250,8 +254,10 @@ export default function CreatePage() {
                     <FileText className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-foreground">Deal Details</h2>
-                    <p className="text-sm text-muted-foreground">Tell us about this deal</p>
+                    <h2 className="text-xl font-bold text-foreground">{"Deal Details"}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {"Tell us about this deal"}
+                    </p>
                   </div>
                 </div>
 
@@ -259,33 +265,35 @@ export default function CreatePage() {
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-semibold">
                       <Tag className="h-4 w-4 text-primary" />
-                      Deal Title <span className="text-destructive">*</span>
+                      {"Deal Title"} <span className="text-destructive">*</span>
                     </label>
                     <Input
                       name="title"
-                      placeholder="e.g., 50% Off All Pizzas at Joe's Pizzeria"
+                      placeholder={"e.g., 50% Off All Pizzas at Joe's Pizzeria"}
                       value={formData.title}
                       onChange={handleChange}
                       required
                       disabled={loading}
-                      className="h-12 text-base rounded-xl border-border/50"
+                      className="h-12 text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-semibold">
                       <FileText className="h-4 w-4 text-primary" />
-                      Description <span className="text-destructive">*</span>
+                      {"Description"} <span className="text-destructive">*</span>
                     </label>
                     <Textarea
                       name="description"
-                      placeholder="Describe the deal, restrictions, and what makes it special"
+                      placeholder={
+                        "Describe the deal in detail. What makes it special? Any restrictions or terms?"
+                      }
                       value={formData.description}
                       onChange={handleChange}
                       required
                       disabled={loading}
                       rows={4}
-                      className="text-base rounded-xl border-border/50 resize-none"
+                      className="text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all resize-none"
                     />
                   </div>
                 </div>
@@ -295,13 +303,12 @@ export default function CreatePage() {
                   disabled={!isStep1Complete}
                   className="w-full"
                 >
-                  Continue to Pricing
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {"Continue to Pricing"} <ArrowRight className="ml-2 h-4 w-4" />
                 </ContinueButton>
               </div>
             )}
 
-            {/* UI: Step 2 – Pricing */}
+            {/* Step 2: Pricing */}
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b border-border/40">
@@ -309,8 +316,12 @@ export default function CreatePage() {
                     <DollarSign className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-foreground">Pricing Information</h2>
-                    <p className="text-sm text-muted-foreground">Show everyone the savings</p>
+                    <h2 className="text-xl font-bold text-foreground">
+                      {"Pricing Information"}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {"Show everyone the savings"}
+                    </p>
                   </div>
                 </div>
 
@@ -318,20 +329,20 @@ export default function CreatePage() {
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <Zap className="h-4 w-4 text-primary" />
-                      Deal Price <span className="text-destructive">*</span>
+                      {"Deal Price"} <span className="text-destructive">*</span>
                     </label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         name="discountedPrice"
-                        placeholder="29.99"
+                        placeholder={"29.99"}
                         value={formData.discountedPrice}
                         onChange={handleChange}
                         required
                         disabled={loading}
                         type="number"
                         step="0.01"
-                        className="h-12 pl-10 text-base rounded-xl border-border/50"
+                        className="h-12 pl-10 text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
@@ -339,19 +350,19 @@ export default function CreatePage() {
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <Tag className="h-4 w-4 text-muted-foreground" />
-                      Original Price (optional)
+                      {"Original Price (optional)"}
                     </label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         name="originalPrice"
-                        placeholder="59.99"
+                        placeholder={"59.99"}
                         value={formData.originalPrice}
                         onChange={handleChange}
                         disabled={loading}
                         type="number"
                         step="0.01"
-                        className="h-12 pl-10 text-base rounded-xl border-border/50"
+                        className="h-12 pl-10 text-base rounded-xl border-border/50 focus-visible:ring-muted-foreground/20 transition-all text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   </div>
@@ -364,7 +375,9 @@ export default function CreatePage() {
                         <Gift className="h-6 w-6 text-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">Total Savings</p>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {"Total Savings"}
+                        </p>
                         <p className="text-2xl font-bold text-foreground">{savings}% OFF</p>
                       </div>
                     </div>
@@ -376,24 +389,23 @@ export default function CreatePage() {
                     type="button"
                     onClick={() => setCurrentStep(1)}
                     variant="outline"
-                    className="flex-1 h-12 rounded-xl"
+                    className="flex-1 h-12 rounded-xl hover:bg-accent/50 transition-all"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
+                    {"Back"}
                   </Button>
                   <ContinueButton
                     onClick={() => setCurrentStep(3)}
                     disabled={!isStep2Complete}
                     className="flex-1"
                   >
-                    Continue to Location
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {"Continue to Location"} <ArrowRight className="ml-2 h-4 w-4" />
                   </ContinueButton>
                 </div>
               </div>
             )}
 
-            {/* UI: Step 3 – Location */}
+            {/* Step 3: Location */}
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b border-border/40">
@@ -401,8 +413,12 @@ export default function CreatePage() {
                     <MapPin className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-foreground">Where's the Deal?</h2>
-                    <p className="text-sm text-muted-foreground">Pin the exact location</p>
+                    <h2 className="text-xl font-bold text-foreground">
+                      {"Where's the Deal?"}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {"Pin the exact location"}
+                    </p>
                   </div>
                 </div>
 
@@ -413,10 +429,10 @@ export default function CreatePage() {
                     type="button"
                     onClick={() => setCurrentStep(2)}
                     variant="outline"
-                    className="flex-1 h-12 rounded-xl"
+                    className="flex-1 h-12 rounded-xl hover:bg-accent/50 transition-all"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
+                    {"Back"}
                   </Button>
                   <Button
                     type="submit"
@@ -426,12 +442,12 @@ export default function CreatePage() {
                     {loading ? (
                       <>
                         <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
-                        Creating Deal...
+                        {"Creating Deal..."}
                       </>
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Publish Deal
+                        {"Publish Deal"}
                       </>
                     )}
                   </Button>
