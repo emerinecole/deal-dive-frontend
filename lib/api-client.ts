@@ -102,14 +102,12 @@ class APIClient {
     return this.handleResponse(response) as T;
   }
 
-  async delete(endpoint: string, params?: URLSearchParams): Promise<void> {
+  async delete(endpoint: string, data?: unknown): Promise<void> {
     const headers = await this.getHeaders();
-    const url = `${this.baseURL}${endpoint}${
-      params ? `?${params.toString()}` : ""
-    }`;
-    const response = await fetch(url, {
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: "DELETE",
       headers,
+      body: data ? JSON.stringify(data) : undefined,
     });
 
     if (response.status !== 204) {
@@ -119,7 +117,21 @@ class APIClient {
   }
 
   private async handleResponse(response: Response): Promise<Response> {
-    const responseJson = await response.json();
+    // Handle empty responses
+    const text = await response.text();
+    if (!text) {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return {} as Response;
+    }
+
+    let responseJson;
+    try {
+      responseJson = JSON.parse(text);
+    } catch {
+      throw new Error(`Invalid JSON response: ${text}`);
+    }
 
     if (!response.ok) {
       throw this.handleError(responseJson);
