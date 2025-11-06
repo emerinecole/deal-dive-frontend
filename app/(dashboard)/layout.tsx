@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Home, Plus, TrendingUp, Bookmark, Search, User } from "lucide-react";
 import AuthRoute from "@/app/components/protected-route/auth-route";
+import Image from "next/image";
 import {
   Sidebar,
   SidebarContent,
@@ -85,21 +86,32 @@ export default async function DashboardLayout({
     <AuthRoute>
       <SidebarProvider defaultOpen={true}>
         <Sidebar className="border-r border-border/40 bg-gradient-to-b from-background to-accent/5">
-          <SidebarHeader className="border-b border-border/40 p-4">
-            <div className="flex items-center gap-3 px-2 py-1">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20">
-                <TrendingUp className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-lg font-bold tracking-tight">
-                  Deal Dive
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Find local deals
-                </span>
-              </div>
+        <SidebarHeader className="border-b border-border/40 p-4">
+          <div className="flex items-center gap-3 px-2 py-1">
+            {/* Logo container */}
+            <div className="relative h-10 w-10 rounded-xl bg-white shadow-lg shadow-primary/20 overflow-hidden">
+              <Image
+                src="/images/deal-dive/iconLogo.png"
+                alt="Deal Dive Icon Logo"
+                fill
+                style={{ objectFit: "contain" }}
+              />
             </div>
-          </SidebarHeader>
+
+            {/* Name logo / tagline */}
+            <div className="flex flex-col gap-0.5">
+              <div className="relative h-6 w-[120px]">
+                <Image
+                  src="/images/deal-dive/nameLogo.png"
+                  alt="Deal Dive Name Logo"
+                  fill
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">Find local deals</span>
+            </div>
+          </div>
+        </SidebarHeader>
 
           <SidebarContent className="px-2 py-4">
             <SidebarGroup>
