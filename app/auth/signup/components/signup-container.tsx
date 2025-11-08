@@ -1,7 +1,6 @@
 import Link from "next/link";
 import SignupForm from "./signup-form";
 import SignupSocialAuth from "./signup-social-auth";
-import { Sparkles } from "lucide-react";
 
 export default function SignupContainer() {
   return (
@@ -17,7 +16,6 @@ export default function SignupContainer() {
           {/* Header */}
           <div className="text-center space-y-4 mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/30 backdrop-blur-sm">
-              <Sparkles className="h-4 w-4 text-white" />
               <span className="text-sm font-semibold text-white">Join Us</span>
             </div>
 

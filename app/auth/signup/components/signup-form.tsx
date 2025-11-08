@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signup } from "@/lib/services/auth-service";
 import { APP_ROUTES } from "@/constants/app-routes";
-import { Mail, Lock, User, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function SignupForm() {
@@ -189,7 +189,6 @@ export default function SignupForm() {
             </>
           ) : (
             <>
-              <Sparkles className="mr-2 h-4 w-4 text-white" />
               Create Account
               <ArrowRight className="ml-2 h-4 w-4 text-white" />
             </>

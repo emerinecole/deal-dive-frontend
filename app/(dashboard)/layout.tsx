@@ -156,7 +156,7 @@ export default async function DashboardLayout({
                 <span className="text-foreground font-semibold">
                   {userInfo.name}
                 </span>
-                ! 👋
+                !
               </span>
 
               <DropdownMenu>
