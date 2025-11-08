@@ -25,7 +25,7 @@ export default function Home() {
         setLoading(true);
         const dealsData = await getDeals();
         setDeals(dealsData);
-      } catch (err) {
+      } catch (_) {
         setError('Failed to load deals');
       } finally {
         setLoading(false);

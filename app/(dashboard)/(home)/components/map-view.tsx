@@ -83,7 +83,7 @@ export default function MapView({ deals }: MapViewProps) {
               const loc = results[0].geometry.location;
               resolved.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
             }
-          } catch (error) {
+          } catch (_) {
             // Failed to geocode address - skip this deal
           }
         }
@@ -119,7 +119,7 @@ export default function MapView({ deals }: MapViewProps) {
       } else {
         alert("Location not found.");
       }
-    } catch (error) {
+    } catch (_) {
       // Error searching location - show alert to user
       alert("Error searching location.");
     } finally {
