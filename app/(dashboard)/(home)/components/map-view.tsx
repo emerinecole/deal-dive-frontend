@@ -45,7 +45,6 @@ export default function MapView({ deals }: MapViewProps) {
             setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           },
           () => {
-            console.log("Using default center");
           }
         );
       }
@@ -84,7 +83,6 @@ export default function MapView({ deals }: MapViewProps) {
               resolved.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
             }
           } catch (error) {
-            console.error(`Failed to geocode ${deal.title}:`, error);
           }
         }
       }
@@ -120,7 +118,6 @@ export default function MapView({ deals }: MapViewProps) {
         alert("Location not found.");
       }
     } catch (error) {
-      console.error("Error searching location:", error);
       alert("Error searching location.");
     } finally {
       setIsSearching(false);
