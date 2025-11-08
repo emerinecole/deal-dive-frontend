@@ -24,7 +24,6 @@ import {
 import { cn } from '@/lib/utils';
 
 export default function CreatePage() {
-  // State management
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -43,7 +42,6 @@ export default function CreatePage() {
   const [success, setSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Form handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -76,17 +74,9 @@ export default function CreatePage() {
 
       await createDeal(dealData);
       setSuccess(true);
-
-      setFormData({
-        title: '',
-        description: '',
-        discountedPrice: '',
-        originalPrice: '',
-      });
-
+      setFormData({ title: '', description: '', discountedPrice: '', originalPrice: '' });
       setLocation({ address: '', lat: 0, lng: 0 });
       setCurrentStep(1);
-
       setTimeout(() => setSuccess(false), 5000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create deal');
@@ -95,7 +85,6 @@ export default function CreatePage() {
     }
   };
 
-  // Step configuration
   const steps = [
     { number: 1, title: 'Basic Info', icon: FileText },
     { number: 2, title: 'Pricing', icon: DollarSign },
@@ -117,50 +106,35 @@ export default function CreatePage() {
   const isStep1Complete = formData.title && formData.description;
   const isStep2Complete = formData.discountedPrice;
 
-  // Reusable continue button
-  const ContinueButton = ({
-    onClick,
-    disabled,
-    children,
-    className = ''
-  }: {
-    onClick: () => void;
-    disabled: boolean;
-    children: React.ReactNode;
-    className?: string;
-  }) => {
-    return (
-      <Button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        className={cn(
-          'h-12 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed',
-          !disabled
-            ? 'bg-black text-white shadow-md hover:bg-[#1a1a1a]'
-            : 'bg-black text-white opacity-50',
-          className
-        )}
-      >
-        {children}
-      </Button>
-    );
-  };
+  const ContinueButton = ({ onClick, disabled, children, className = '' }: { onClick: () => void; disabled: boolean; children: React.ReactNode; className?: string }) => (
+    <Button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        'h-12 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed',
+        !disabled
+          ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
+          : 'bg-blue-600 text-white opacity-50',
+        className
+      )}
+    >
+      {children}
+    </Button>
+  );
 
-  // UI: Main render
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5 relative overflow-hidden">
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 relative overflow-hidden">
       <div className="relative z-0 max-w-4xl mx-auto p-6 md:p-8 space-y-8">
+        {/* Header */}
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 backdrop-blur-sm">
-            <span className="text-sm font-semibold text-primary">Share a Deal</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100/60 border border-blue-200 backdrop-blur-sm">
+            <span className="text-sm font-semibold text-blue-600">Share a Deal</span>
           </div>
-
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
             Create Your Deal
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             {"Help your community save money by sharing amazing local deals"}
           </p>
         </div>
@@ -177,17 +151,17 @@ export default function CreatePage() {
                     className={cn(
                       'flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300',
                       isCompleted
-                        ? 'bg-muted text-foreground shadow-lg'
+                        ? 'bg-blue-200 text-blue-800 shadow-md'
                         : isCurrent
-                        ? 'bg-gradient-to-br from-primary to-primary/70 text-white shadow-lg shadow-primary/30 scale-110'
-                        : 'bg-muted/50 text-foreground'
+                        ? 'bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-lg scale-110'
+                        : 'bg-blue-100 text-gray-600'
                     )}
                   >
                     {isCompleted ? <Check className="h-5 w-5" /> : <step.icon className="h-5 w-5" />}
                   </div>
                   <span
                     className={cn(
-                      'text-xs font-medium text-foreground',
+                      'text-xs font-medium text-gray-900',
                       isCurrent && 'font-bold'
                     )}
                   >
@@ -195,12 +169,10 @@ export default function CreatePage() {
                   </span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div
-                    className={cn(
-                      'h-1 w-16 rounded-full transition-all duration-300',
-                      isCompleted ? 'bg-muted' : 'bg-muted/50'
-                    )}
-                  />
+                  <div className={cn(
+                    'h-1 w-16 rounded-full transition-all duration-300',
+                    isCompleted ? 'bg-blue-300' : 'bg-blue-100'
+                  )} />
                 )}
               </div>
             );
@@ -209,18 +181,14 @@ export default function CreatePage() {
 
         {/* Success */}
         {success && (
-          <div className="bg-gradient-to-r from-secondary/20 to-secondary/10 border-2 border-secondary/30 rounded-2xl p-6 backdrop-blur-xl">
+          <div className="bg-blue-100/40 border-2 border-blue-200 rounded-2xl p-6 backdrop-blur-xl">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
-                <CheckCircle2 className="h-6 w-6 text-secondary" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-200/50 flex items-center justify-center">
+                <CheckCircle2 className="h-6 w-6 text-blue-600" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-lg text-secondary">
-                  {"Deal Created Successfully! 🎉"}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {"Your deal is now live and helping the community save money!"}
-                </p>
+                <h3 className="font-bold text-lg text-blue-600">{"Deal Created Successfully!"}</h3>
+                <p className="text-sm text-gray-600">{"Your deal is now live and helping the community save money!"}</p>
               </div>
             </div>
           </div>
@@ -228,156 +196,141 @@ export default function CreatePage() {
 
         {/* Error */}
         {error && (
-          <div className="bg-destructive/10 border-2 border-destructive/30 rounded-2xl p-6 backdrop-blur-xl">
+          <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 backdrop-blur-xl">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-destructive/20 flex items-center justify-center">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
                 <span className="text-2xl">⚠️</span>
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-lg text-destructive">{"Oops!"}</h3>
-                <p className="text-sm text-muted-foreground">{error}</p>
+                <h3 className="font-bold text-lg text-red-600">{"Oops!"}</h3>
+                <p className="text-sm text-gray-600">{error}</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Form */}
-        <div className="bg-background/80 backdrop-blur-xl rounded-3xl border border-border/40 shadow-2xl shadow-primary/5 p-8 md:p-10">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-blue-200 shadow-2xl shadow-blue-100/20 p-8 md:p-10">
           <form onSubmit={handleSubmit} className="space-y-8">
-            
-            {/* UI: Step 1 – Basic Info */}
+            {/* Step 1 */}
             {currentStep === 1 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-border/40">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-primary-foreground" />
+                <div className="flex items-center gap-3 pb-4 border-b border-blue-200">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-400 flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-foreground">{"Deal Details"}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {"Tell us about this deal"}
-                    </p>
+                    <h2 className="text-xl font-bold text-gray-900">Deal Details</h2>
+                    <p className="text-sm text-gray-600">Tell us about this deal</p>
                   </div>
                 </div>
-
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-semibold">
-                      <Tag className="h-4 w-4 text-primary" />
-                      {"Deal Title"} <span className="text-destructive">*</span>
+                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                      <Tag className="h-4 w-4 text-blue-600" />
+                      Deal Title <span className="text-red-600">*</span>
                     </label>
                     <Input
                       name="title"
-                      placeholder={"e.g., 50% Off All Pizzas at Joe's Pizzeria"}
+                      placeholder="e.g., 50% Off All Pizzas at Joe's Pizzeria"
                       value={formData.title}
                       onChange={handleChange}
                       required
                       disabled={loading}
-                      className="h-12 text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all"
+                      className="h-12 text-base rounded-xl border-blue-200 focus-visible:ring-blue-200 transition-all"
                     />
                   </div>
-
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-semibold">
-                      <FileText className="h-4 w-4 text-primary" />
-                      {"Description"} <span className="text-destructive">*</span>
+                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                      Description <span className="text-red-600">*</span>
                     </label>
                     <Textarea
                       name="description"
-                      placeholder={
-                        "Describe the deal in detail. What makes it special? Any restrictions or terms?"
-                      }
+                      placeholder="Describe the deal in detail. What makes it special? Any restrictions or terms?"
                       value={formData.description}
                       onChange={handleChange}
                       required
                       disabled={loading}
                       rows={4}
-                      className="text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all resize-none"
+                      className="text-base rounded-xl border-blue-200 focus-visible:ring-blue-200 transition-all resize-none"
                     />
                   </div>
                 </div>
-
                 <ContinueButton
                   onClick={() => setCurrentStep(2)}
                   disabled={!isStep1Complete}
                   className="w-full"
                 >
-                  {"Continue to Pricing"} <ArrowRight className="ml-2 h-4 w-4" />
+                  Continue to Pricing <ArrowRight className="ml-2 h-4 w-4" />
                 </ContinueButton>
               </div>
             )}
 
-            {/* Step 2: Pricing */}
+            {/* Step 2 */}
             {currentStep === 2 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-border/40">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 text-primary-foreground" />
+                <div className="flex items-center gap-3 pb-4 border-b border-blue-200">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-400 flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-foreground">
-                      {"Pricing Information"}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {"Show everyone the savings"}
-                    </p>
+                    <h2 className="text-xl font-bold text-gray-900">Pricing Information</h2>
+                    <p className="text-sm text-gray-600">Show everyone the savings</p>
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <Zap className="h-4 w-4 text-primary" />
-                      {"Deal Price"} <span className="text-destructive">*</span>
+                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                      <Zap className="h-4 w-4 text-blue-600" />
+                      Deal Price <span className="text-red-600">*</span>
                     </label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
                         name="discountedPrice"
-                        placeholder={"29.99"}
+                        placeholder="29.99"
                         value={formData.discountedPrice}
                         onChange={handleChange}
                         required
                         disabled={loading}
                         type="number"
                         step="0.01"
-                        className="h-12 pl-10 text-base rounded-xl border-border/50 focus-visible:ring-primary/20 transition-all text-foreground placeholder:text-muted-foreground"
+                        className="h-12 pl-10 text-base rounded-xl border-blue-200 focus-visible:ring-blue-200 transition-all text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                   </div>
-
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <Tag className="h-4 w-4 text-muted-foreground" />
-                      {"Original Price (optional)"}
+                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                      <Tag className="h-4 w-4 text-gray-400" />
+                      Original Price (optional)
                     </label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
                         name="originalPrice"
-                        placeholder={"59.99"}
+                        placeholder="59.99"
                         value={formData.originalPrice}
                         onChange={handleChange}
                         disabled={loading}
                         type="number"
                         step="0.01"
-                        className="h-12 pl-10 text-base rounded-xl border-border/50 focus-visible:ring-muted-foreground/20 transition-all text-foreground placeholder:text-muted-foreground"
+                        className="h-12 pl-10 text-base rounded-xl border-blue-200 focus-visible:ring-blue-200 transition-all text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                   </div>
                 </div>
 
                 {savings > 0 && (
-                  <div className="bg-muted/30 border-2 border-border rounded-xl p-4">
+                  <div className="bg-blue-50/50 border-2 border-blue-200 rounded-xl p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-                        <Gift className="h-6 w-6 text-foreground" />
+                      <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <Gift className="h-6 w-6 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">
-                          {"Total Savings"}
-                        </p>
-                        <p className="text-2xl font-bold text-foreground">{savings}% OFF</p>
+                        <p className="text-sm font-medium text-gray-600">Total Savings</p>
+                        <p className="text-2xl font-bold text-gray-900">{savings}% OFF</p>
                       </div>
                     </div>
                   </div>
@@ -388,36 +341,32 @@ export default function CreatePage() {
                     type="button"
                     onClick={() => setCurrentStep(1)}
                     variant="outline"
-                    className="flex-1 h-12 rounded-xl hover:bg-accent/50 transition-all"
+                    className="flex-1 h-12 rounded-xl hover:bg-blue-100/50 transition-all"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    {"Back"}
+                    Back
                   </Button>
                   <ContinueButton
                     onClick={() => setCurrentStep(3)}
                     disabled={!isStep2Complete}
                     className="flex-1"
                   >
-                    {"Continue to Location"} <ArrowRight className="ml-2 h-4 w-4" />
+                    Continue to Location <ArrowRight className="ml-2 h-4 w-4" />
                   </ContinueButton>
                 </div>
               </div>
             )}
 
-            {/* Step 3: Location */}
+            {/* Step 3 */}
             {currentStep === 3 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-border/40">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                    <MapPin className="h-5 w-5 text-primary-foreground" />
+                <div className="flex items-center gap-3 pb-4 border-b border-blue-200">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-400 flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-foreground">
-                      {"Where's the Deal?"}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {"Pin the exact location"}
-                    </p>
+                    <h2 className="text-xl font-bold text-gray-900">Where&apos;s the Deal?</h2>
+                    <p className="text-sm text-gray-600">Pin the exact location</p>
                   </div>
                 </div>
 
@@ -428,25 +377,23 @@ export default function CreatePage() {
                     type="button"
                     onClick={() => setCurrentStep(2)}
                     variant="outline"
-                    className="flex-1 h-12 rounded-xl hover:bg-accent/50 transition-all"
+                    className="flex-1 h-12 rounded-xl hover:bg-blue-100/50 transition-all"
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    {"Back"}
+                    Back
                   </Button>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 h-12 rounded-xl bg-gradient-to-r from-primary via-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 h-12 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg shadow-blue-200/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <>
-                        <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
-                        {"Creating Deal..."}
+                        <div className="h-4 w-4 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mr-2" />
+                        Creating Deal...
                       </>
                     ) : (
-                      <>
-                        {"Publish Deal"}
-                      </>
+                      <>Publish Deal</>
                     )}
                   </Button>
                 </div>

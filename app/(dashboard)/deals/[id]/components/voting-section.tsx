@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { VoteType } from '@/lib/types/votes';
+import { cn } from '@/lib/utils';
 
 interface VotingSectionProps {
   upvotes: number;
@@ -23,7 +24,13 @@ export function VotingSection({
       <div className="text-xs uppercase text-muted-foreground">Votes</div>
       <div className="flex items-center gap-3">
         <Button
-          variant={userVote === 1 ? 'default' : 'secondary'}
+          className={cn(
+            'font-semibold',
+            voteBusy || disabled ? 'opacity-50 cursor-not-allowed' : '',
+            userVote === 1
+              ? 'bg-blue-500 text-white hover:bg-blue-600' // Blue if voted up
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300' // Light grey if not voted
+          )}
           size="sm"
           disabled={voteBusy || disabled}
           onClick={() => onVote(1)}
@@ -32,7 +39,13 @@ export function VotingSection({
         </Button>
 
         <Button
-          variant={userVote === -1 ? 'default' : 'secondary'}
+          className={cn(
+            'font-semibold',
+            voteBusy || disabled ? 'opacity-50 cursor-not-allowed' : '',
+            userVote === -1
+              ? 'bg-blue-500 text-white hover:bg-blue-600' // Blue if voted down
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300' // Light grey if not voted
+          )}
           size="sm"
           disabled={voteBusy || disabled}
           onClick={() => onVote(-1)}
@@ -43,5 +56,3 @@ export function VotingSection({
     </div>
   );
 }
-
-
