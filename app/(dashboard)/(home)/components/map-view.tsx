@@ -45,6 +45,7 @@ export default function MapView({ deals }: MapViewProps) {
             setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           },
           () => {
+            // Using default center - geolocation denied or unavailable
           }
         );
       }
@@ -83,6 +84,7 @@ export default function MapView({ deals }: MapViewProps) {
               resolved.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
             }
           } catch (error) {
+            // Failed to geocode address - skip this deal
           }
         }
       }
@@ -118,6 +120,7 @@ export default function MapView({ deals }: MapViewProps) {
         alert("Location not found.");
       }
     } catch (error) {
+      // Error searching location - show alert to user
       alert("Error searching location.");
     } finally {
       setIsSearching(false);
@@ -202,7 +205,7 @@ export default function MapView({ deals }: MapViewProps) {
             onClick={handleSearch}
             disabled={isSearching}
             className={cn(
-              "h-12 px-6 rounded-xl transition-all hover:scale-[1.02] hover:cursor-pointer active:scale-[0.98]",
+              "h-12 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]",
               "shadow-lg shadow-primary/30 opacity-85 disabled:opacity-60"
             )}
           >
@@ -284,58 +287,66 @@ export default function MapView({ deals }: MapViewProps) {
                         <div
                           key={deal.id}
                           className={cn(
-                            "space-y-3 pb-3",
+                            "pb-3",
                             index < selectedDealGroup.length - 1 && "border-b border-border/40"
                           )}
                         >
-                          {/* Header with savings badge */}
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className="font-bold text-sm text-foreground leading-tight flex-1">
+                          {/* Header with savings badge - Fixed height for 2 lines */}
+                          <div className="flex items-start justify-between gap-2 mb-2 min-h-[40px]">
+                            <h4 className="font-bold text-sm text-foreground leading-tight flex-1 line-clamp-2">
                               {deal.title}
                             </h4>
                             {savings > 0 && (
-                              <div className="bg-gradient-to-br from-gray-500 to-gray-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 flex-shrink-0">
+                              <div className="bg-gradient-to-br from-gray-500/50 to-gray-600/50 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 flex-shrink-0 shadow-sm h-fit">
                                 <TrendingDown className="h-3 w-3" />
                                 {savings}%
                               </div>
                             )}
                           </div>
 
-                          {/* Location */}
-                          <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                            <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5 text-primary" />
-                            <span className="line-clamp-1">{deal.address}</span>
-                          </div>
-
-                          {/* Description */}
-                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                            {deal.description}
-                          </p>
-
-                          {/* Pricing */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-xl font-bold text-foreground flex items-start">
-                                <DollarSign className="h-4 w-4 mt-0.5" />
-                                {deal.discounted_price}
-                              </span>
+                          {/* Location - Fixed height */}
+                          <div className="h-[18px] mb-2 overflow-hidden">
+                            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5 text-primary" />
+                              <span className="line-clamp-1">{deal.address}</span>
                             </div>
-                            {deal.original_price && (
-                              <span className="text-sm text-muted-foreground line-through flex items-start">
-                                <DollarSign className="h-3 w-3 mt-0.5" />
-                                {deal.original_price}
-                              </span>
-                            )}
                           </div>
 
-                          {/* View Details Link */}
-                          <Link
-                            href={`/deals/${deal.id}?from=map`}
-                            className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors group"
-                          >
-                            View Full Details
-                            <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                          </Link>
+                          {/* Description - Fixed height for 3 lines */}
+                          <div className="h-[48px] mb-3 overflow-hidden">
+                            <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                              {deal.description}
+                            </p>
+                          </div>
+
+                          {/* Pricing - Fixed height */}
+                          <div className="h-[28px] mb-2 overflow-hidden">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-bold text-foreground flex items-start">
+                                  <DollarSign className="h-4 w-4 mt-0.5" />
+                                  {deal.discounted_price}
+                                </span>
+                              </div>
+                              {deal.original_price && (
+                                <span className="text-sm text-muted-foreground line-through flex items-start">
+                                  <DollarSign className="h-3 w-3 mt-0.5" />
+                                  {deal.original_price}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* View Details Link - Always at same position */}
+                          <div className="h-[20px]">
+                            <Link
+                              href={`/deals/${deal.id}?from=map`}
+                              className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors group"
+                            >
+                              View Full Details
+                              <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                          </div>
                         </div>
                       );
                     })}
