@@ -10,7 +10,6 @@ import { CreateDealInput } from '@/lib/types/deals';
 import { createClient } from '@/lib/supabase/client';
 import { UUID } from 'crypto';
 import {
-  Sparkles,
   DollarSign,
   MapPin,
   FileText,

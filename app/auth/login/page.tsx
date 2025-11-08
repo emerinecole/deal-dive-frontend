@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/services/auth-service";
 import { APP_ROUTES } from "@/constants/app-routes";
 import SignupSocialAuth from "../signup/components/signup-social-auth";
-import { Sparkles, Mail, Lock, ArrowRight, LogIn } from "lucide-react";
+import { Mail, Lock, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 

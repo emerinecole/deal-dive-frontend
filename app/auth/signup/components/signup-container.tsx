@@ -1,7 +1,6 @@
 import Link from "next/link";
 import SignupForm from "./signup-form";
 import SignupSocialAuth from "./signup-social-auth";
-import { Sparkles } from "lucide-react";
 
 export default function SignupContainer() {
   return (

@@ -7,7 +7,7 @@ import MapView from './components/map-view';
 import ListView from './components/list-view';
 import { getDeals } from '@/lib/services/deal-service';
 import { Deal } from '@/lib/types/deals';
-import { Sparkles, MapIcon, List, Loader2 } from 'lucide-react';
+import { MapIcon, List, Loader2 } from 'lucide-react';
 
 export default function Home() {
   const [deals, setDeals] = useState<Deal[]>([]);
