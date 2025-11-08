@@ -189,7 +189,6 @@ export default function SignupForm() {
             </>
           ) : (
             <>
-              <Sparkles className="mr-2 h-4 w-4 text-white" />
               Create Account
               <ArrowRight className="ml-2 h-4 w-4 text-white" />
             </>

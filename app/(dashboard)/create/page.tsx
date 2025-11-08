@@ -155,7 +155,6 @@ export default function CreatePage() {
       <div className="relative z-0 max-w-4xl mx-auto p-6 md:p-8 space-y-8">
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 backdrop-blur-sm">
-            <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold text-primary">Share a Deal</span>
           </div>
 
@@ -447,7 +446,6 @@ export default function CreatePage() {
                       </>
                     ) : (
                       <>
-                        <Sparkles className="mr-2 h-4 w-4" />
                         {"Publish Deal"}
                       </>
                     )}

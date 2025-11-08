@@ -76,7 +76,6 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center space-y-4 mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary/20 to-blue-200/20 border border-primary/30 backdrop-blur-sm">
-              <Sparkles className="h-4 w-4 text-blue-900" />
               <span className="text-sm font-semibold text-blue-900">Welcome Back</span>
             </div>
 
@@ -182,7 +181,6 @@ export default function LoginPage() {
                   </>
                 ) : (
                   <>
-                    <LogIn className="mr-2 h-4 w-4" />
                     Sign In
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
