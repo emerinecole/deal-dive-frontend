@@ -62,11 +62,9 @@ export default function DealDetailPage() {
         const data = await getDeal(id);
         setDeal(data);
 
-        // Determine map position
         if (data.latitude && data.longitude) {
           setPosition({ lat: data.latitude, lng: data.longitude });
         } else if (data.address) {
-          // Reverse geocode the address
           const geocodeRes = await fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
               data.address
@@ -141,13 +139,25 @@ export default function DealDetailPage() {
     else router.push('/?tab=list');
   };
 
-  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading deal...</p></div>;
-  if (error || !deal) return (
-    <div className="p-6 space-y-4">
-      <p className="text-red-500">{error ?? 'Deal not found'}</p>
-      <Button variant="secondary" onClick={handleBack}>Go Back</Button>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="p-6">
+        <p className="text-blue-700">Loading deal...</p>
+      </div>
+    );
+
+  if (error || !deal)
+    return (
+      <div className="p-6 space-y-4">
+        <p className="text-red-500">{error ?? 'Deal not found'}</p>
+        <Button
+          className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
+          onClick={handleBack}
+        >
+          Go Back
+        </Button>
+      </div>
+    );
 
   const directionsUrl = position
     ? `https://www.google.com/maps/dir/?api=1&destination=${position.lat},${position.lng}`
@@ -156,10 +166,10 @@ export default function DealDetailPage() {
     : null;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-gradient-to-br from-white via-blue-50 to-blue-100 min-h-screen">
       <DealHeader deal={deal} saved={saved} onSaveToggle={() => setSaved((s) => !s)} />
 
-      <p className="text-sm text-muted-foreground">{deal.description}</p>
+      <p className="text-sm text-blue-900">{deal.description}</p>
 
       <div className="grid grid-cols-2 gap-4">
         <VotingSection
@@ -176,8 +186,8 @@ export default function DealDetailPage() {
           }}
         />
         <div className="space-y-1">
-          <div className="text-xs uppercase text-muted-foreground">Comments</div>
-          <div className="text-sm">{commentCount}</div>
+          <div className="text-xs uppercase text-blue-700/70">Comments</div>
+          <div className="text-sm text-blue-900">{commentCount}</div>
         </div>
       </div>
 
@@ -191,9 +201,18 @@ export default function DealDetailPage() {
         onDeleteComment={(commentId) => commentsHook.handleDeleteComment(commentId, (count) => setCommentCount(count))}
       />
 
-      <div className="flex gap-3">
-        <Button variant="secondary" onClick={handleBack}>Back</Button>
-        <Button variant="outline" onClick={() => reporting.setShowReportDialog(true)} disabled={!userId}>
+      <div className="flex gap-3 mt-4">
+        <Button
+          className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
+          onClick={handleBack}
+        >
+          Back
+        </Button>
+        <Button
+          className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
+          onClick={() => reporting.setShowReportDialog(true)}
+          disabled={!userId}
+        >
           Report Deal
         </Button>
       </div>
@@ -210,7 +229,6 @@ export default function DealDetailPage() {
         }}
       />
 
-      {/* Map of individual deal*/}
       {isLoaded && position ? (
         <div className="w-full h-[300px] rounded-lg overflow-hidden shadow-md mt-6">
           <GoogleMap
@@ -222,10 +240,15 @@ export default function DealDetailPage() {
             {showInfo && (
               <InfoWindow position={position} onCloseClick={() => setShowInfo(false)}>
                 <div className="text-sm space-y-1">
-                  <div className="font-semibold">{deal.title}</div>
-                  {deal.address && <div>{deal.address}</div>}
+                  <div className="font-semibold text-blue-900">{deal.title}</div>
+                  {deal.address && <div className="text-blue-700">{deal.address}</div>}
                   {directionsUrl && (
-                    <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
                       Get Directions
                     </a>
                   )}
@@ -235,7 +258,7 @@ export default function DealDetailPage() {
           </GoogleMap>
         </div>
       ) : (
-        <p className="text-muted-foreground text-sm mt-2">No map location available</p>
+        <p className="text-blue-700 text-sm mt-2">No map location available</p>
       )}
     </div>
   );

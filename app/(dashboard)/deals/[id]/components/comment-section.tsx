@@ -25,7 +25,7 @@ export function CommentSection({
   return (
     <>
       {/* Comment input */}
-      <div className="space-y-2">
+      <div className="space-y-2 bg-white p-3 rounded-lg border border-blue-200"> {/* added bg-white, padding, border */}
         <div className="text-xs uppercase text-muted-foreground">Add a comment</div>
         <div className="flex gap-2">
           <Input
@@ -39,11 +39,13 @@ export function CommentSection({
               }
             }}
             disabled={commentsBusy || !userId}
+            className="bg-white"
           />
           <Button
-            variant="secondary"
+            variant="default"
             onClick={onAddComment}
             disabled={commentsBusy || !userId || !comment.trim()}
+            className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
           >
             {commentsBusy ? 'Posting...' : 'Post'}
           </Button>
@@ -52,11 +54,14 @@ export function CommentSection({
 
       {/* Comments list */}
       {comments.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-3 mt-4">
           <div className="text-xs uppercase text-muted-foreground">Comments ({comments.length})</div>
           <div className="space-y-3">
             {comments.map((c) => (
-              <div key={c.id} className="border rounded-lg p-3 space-y-2">
+              <div
+                key={c.id}
+                className="border rounded-lg p-3 space-y-2 bg-white"
+              >
                 <div className="flex justify-between items-start">
                   <p className="text-sm">{c.content}</p>
                   {userId === c.user_id && (
@@ -71,7 +76,8 @@ export function CommentSection({
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(c.created_at).toLocaleDateString()} at {new Date(c.created_at).toLocaleTimeString()}
+                  {new Date(c.created_at).toLocaleDateString()} at{' '}
+                  {new Date(c.created_at).toLocaleTimeString()}
                 </p>
               </div>
             ))}
@@ -81,4 +87,3 @@ export function CommentSection({
     </>
   );
 }
-
