@@ -41,7 +41,7 @@ export default function Home() {
             lng: position.coords.longitude,
           });
         },
-        (error) => console.error("Failed to get location:", error),
+        () => alert("Failed to get location:"),
         { enableHighAccuracy: true }
       );
     }
