@@ -37,6 +37,22 @@ export default function CreatePage() {
     lng: 0,
   });
 
+  const [category, setCategory] = useState<string>('');
+  const [tagInput, setTagInput] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+
+  const handleAddTag = () => {
+    const trimmed = tagInput.trim().toLowerCase();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags((prev) => [...prev, trimmed]);
+    }
+    setTagInput('');
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(t => t !== tagToRemove));
+  };
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -70,12 +86,16 @@ export default function CreatePage() {
         address: location.address,
         latitude: location.lat,
         longitude: location.lng,
+        // category,
+        // tags,
       };
 
       await createDeal(dealData);
       setSuccess(true);
       setFormData({ title: '', description: '', discountedPrice: '', originalPrice: '' });
       setLocation({ address: '', lat: 0, lng: 0 });
+      setCategory('');
+      setTags([]);
       setCurrentStep(1);
       setTimeout(() => setSuccess(false), 5000);
     } catch (err) {
@@ -88,7 +108,8 @@ export default function CreatePage() {
   const steps = [
     { number: 1, title: 'Basic Info', icon: FileText },
     { number: 2, title: 'Pricing', icon: DollarSign },
-    { number: 3, title: 'Location', icon: MapPin },
+    { number: 3, title: 'Category & Tags', icon: Tag },
+    { number: 4, title: 'Location', icon: MapPin },
   ];
 
   const calculateSavings = () => {
@@ -105,6 +126,7 @@ export default function CreatePage() {
   const savings = calculateSavings();
   const isStep1Complete = formData.title && formData.description;
   const isStep2Complete = formData.discountedPrice;
+  const isStep3Complete = category;
 
   const ContinueButton = ({ onClick, disabled, children, className = '' }: { onClick: () => void; disabled: boolean; children: React.ReactNode; className?: string }) => (
     <Button
@@ -212,6 +234,7 @@ export default function CreatePage() {
         {/* Form */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-blue-200 shadow-2xl shadow-blue-100/20 p-8 md:p-10">
           <form onSubmit={handleSubmit} className="space-y-8">
+
             {/* Step 1 */}
             {currentStep === 1 && (
               <div className="space-y-6">
@@ -351,28 +374,94 @@ export default function CreatePage() {
                     disabled={!isStep2Complete}
                     className="flex-1"
                   >
-                    Continue to Location <ArrowRight className="ml-2 h-4 w-4" />
+                    Continue to Category <ArrowRight className="ml-2 h-4 w-4" />
                   </ContinueButton>
                 </div>
               </div>
             )}
 
-            {/* Step 3 */}
+            {/* Step 3 - Category & Tags */}
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3 pb-4 border-b border-blue-200">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-400 flex items-center justify-center">
-                    <MapPin className="h-5 w-5 text-white" />
+                    <Tag className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Where&apos;s the Deal?</h2>
-                    <p className="text-sm text-gray-600">Pin the exact location</p>
+                    <h2 className="text-xl font-bold text-gray-900">Category & Tags</h2>
+                    <p className="text-sm text-gray-600">Categorize and tag your deal</p>
                   </div>
                 </div>
 
-                <LocationPicker formData={location} setFormData={setLocation} />
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    Category <span className="text-red-600">*</span>
+                  </label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="h-12 w-full rounded-xl border border-blue-200 px-4 text-gray-900 focus-visible:ring-blue-200"
+                  >
+                    <option value="">Select a category...</option>
+                    <option value="groceries">Groceries</option>
+                    <option value="bar">Bar (Drinks)</option>
+                    <option value="restaurant">Restaurant (Food)</option>
+                    <option value="department_store">Department Store</option>
+                  </select>
+                </div>
 
-                <div className="flex gap-3">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    Tags (optional)
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Type a tag and press Enter"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      disabled={loading}
+                      className="h-12 text-base rounded-xl border-blue-200 focus-visible:ring-blue-200 transition-all"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddTag}
+                      className="h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      Add
+                    </Button>
+                  </div>
+
+                  {/* Tag bubbles */}
+                  {tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {tags.map((tag) => (
+                        <div
+                          key={tag}
+                          className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(tag)}
+                            className="ml-1 text-blue-500 hover:text-blue-700"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3 pt-4">
                   <Button
                     type="button"
                     onClick={() => setCurrentStep(2)}
@@ -382,19 +471,49 @@ export default function CreatePage() {
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
+                  <ContinueButton
+                    onClick={() => setCurrentStep(4)}
+                    disabled={!isStep3Complete}
+                    className="flex-1"
+                  >
+                    Continue to Location <ArrowRight className="ml-2 h-4 w-4" />
+                  </ContinueButton>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4 - Location */}
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-blue-200">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-400 flex items-center justify-center">
+                    <MapPin className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Location</h2>
+                    <p className="text-sm text-gray-600">Choose where this deal is available</p>
+                  </div>
+                </div>
+
+                <LocationPicker formData={location} setFormData={setLocation} />
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    variant="outline"
+                    className="flex-1 h-12 rounded-xl hover:bg-blue-100/50 transition-all"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 h-12 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg shadow-blue-200/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all"
                   >
-                    {loading ? (
-                      <>
-                        <div className="h-4 w-4 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin mr-2" />
-                        Creating Deal...
-                      </>
-                    ) : (
-                      <>Publish Deal</>
-                    )}
+                    {loading ? 'Submitting...' : 'Submit Deal'}
+                    {!loading && <Check className="ml-2 h-4 w-4" />}
                   </Button>
                 </div>
               </div>
@@ -405,3 +524,4 @@ export default function CreatePage() {
     </div>
   );
 }
+
