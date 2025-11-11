@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState, useRef } from "react";
-import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
+import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, DollarSign, TrendingDown, ArrowRight, Loader2 } from "lucide-react";
+import { Search, MapPin, TrendingDown, ArrowRight, Loader2 } from "lucide-react";
 import { Deal } from "@/lib/types/deals";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -19,11 +19,6 @@ interface DealWithCoords extends Deal {
 }
 
 export default function MapView({ deals }: MapViewProps) {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    libraries: ["places"],
-  });
-
   const UF_COORDS = { lat: 29.6535, lng: -82.3388 };
   const [mapCenter, setMapCenter] = useState(UF_COORDS);
   const [mapZoom, setMapZoom] = useState(13);
@@ -41,18 +36,14 @@ export default function MapView({ deals }: MapViewProps) {
     navigator.permissions.query({ name: "geolocation" }).then((status) => {
       if (status.state === "granted" || status.state === "prompt") {
         navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          },
-          () => {
-            // Using default center - geolocation denied or unavailable
-          }
+          (pos) => setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => {} // fallback to default
         );
       }
     });
   }, []);
 
-  // Reverse geocoding
+  // Reverse geocoding helper
   const geocodeAddress = (address: string): Promise<google.maps.GeocoderResult[]> => {
     return new Promise((resolve, reject) => {
       const geocoder = new google.maps.Geocoder();
@@ -65,7 +56,7 @@ export default function MapView({ deals }: MapViewProps) {
 
   // Prepare markers
   useEffect(() => {
-    if (!isLoaded || !deals.length) return;
+    if (!(window as Window & { google?: typeof google })?.google || !deals.length) return;
 
     const resolveDeals = async () => {
       const resolved: DealWithCoords[] = [];
@@ -83,9 +74,7 @@ export default function MapView({ deals }: MapViewProps) {
               const loc = results[0].geometry.location;
               resolved.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
             }
-          } catch {
-            // Failed to geocode address - skip this deal
-          }
+          } catch {}
         }
       }
 
@@ -93,7 +82,7 @@ export default function MapView({ deals }: MapViewProps) {
     };
 
     resolveDeals();
-  }, [isLoaded, deals]);
+  }, [deals]);
 
   // Group deals at same coordinates
   const groupedMarkers = markers.reduce((groups, deal) => {
@@ -103,9 +92,9 @@ export default function MapView({ deals }: MapViewProps) {
     return groups;
   }, {} as Record<string, DealWithCoords[]>);
 
-  // Search for location
+  // Search location
   const handleSearch = async () => {
-    if (!searchQuery.trim() || !isLoaded) return;
+    if (!searchQuery.trim() || !(window as Window & { google?: typeof google })?.google) return;
 
     setIsSearching(true);
     try {
@@ -141,12 +130,11 @@ export default function MapView({ deals }: MapViewProps) {
     return 0;
   };
 
-  // 🧭 Default Google Map (no styling)
   const getMarkerIcon = (key: string) => {
     const isActive =
       hoveredKey === key ||
       selectedDealGroup?.[0]?.lat.toFixed(6) + "," + selectedDealGroup?.[0]?.lng.toFixed(6) === key;
-    const fillColor = isActive ? "#991b1b" : "#dc2626"; // red shift
+    const fillColor = isActive ? "#991b1b" : "#dc2626";
     return {
       path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
       fillColor,
@@ -158,18 +146,13 @@ export default function MapView({ deals }: MapViewProps) {
     };
   };
 
-  if (!isLoaded) {
+  if (!(window as Window & { google?: typeof google })?.google) {
     return (
-      <div className="bg-background/80 backdrop-blur-xl rounded-3xl border border-border/40 shadow-2xl shadow-primary/5 p-12">
-        <div className="flex flex-col items-center justify-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-300/40">
-            <Loader2 className="h-8 w-8 text-white animate-spin" />
-          </div>
-          <p className="text-muted-foreground">Loading Map...</p>
-        </div>
+      <div className="flex justify-center items-center h-64">
+        <p className="text-blue-700">Loading Map...</p>
       </div>
     );
-  }
+  }  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 space-y-6 p-6">
@@ -258,9 +241,7 @@ export default function MapView({ deals }: MapViewProps) {
                   lng: selectedDealGroup[0].lng,
                 }}
                 onCloseClick={() => setSelectedDealGroup(null)}
-                options={{
-                  pixelOffset: new google.maps.Size(0, -40),
-                }}
+                options={{ pixelOffset: new google.maps.Size(0, -40) }}
               >
                 <div className="p-1 max-w-[320px] max-h-[400px] overflow-y-auto">
                   <div className="space-y-3">
@@ -298,23 +279,6 @@ export default function MapView({ deals }: MapViewProps) {
                             <p className="text-xs text-blue-800 line-clamp-3 leading-relaxed">
                               {deal.description}
                             </p>
-                          </div>
-
-                          <div className="h-[28px] mb-2 overflow-hidden">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-baseline gap-1">
-                                <span className="text-xl font-bold text-blue-900 flex items-start">
-                                  <DollarSign className="h-4 w-4 mt-0.5" />
-                                  {deal.discounted_price}
-                                </span>
-                              </div>
-                              {deal.original_price && (
-                                <span className="text-sm text-blue-500 line-through flex items-start">
-                                  <DollarSign className="h-3 w-3 mt-0.5" />
-                                  {deal.original_price}
-                                </span>
-                              )}
-                            </div>
                           </div>
 
                           <div className="h-[20px]">

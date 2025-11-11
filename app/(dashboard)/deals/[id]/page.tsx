@@ -18,7 +18,9 @@ import { VotingSection } from './components/voting-section';
 import { CommentSection } from './components/comment-section';
 import { ReportDialog } from './components/report-dialog';
 
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import Link from "next/link";
+
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 
 export default function DealDetailPage() {
   const params = useParams();
@@ -42,10 +44,6 @@ export default function DealDetailPage() {
   const voting = useVoting(deal, userId);
   const commentsHook = useComments(id, userId);
   const reporting = useReporting(id, userId);
-
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-  });
 
   useEffect(() => {
     const supabase = createClient();
@@ -200,23 +198,34 @@ export default function DealDetailPage() {
         onAddComment={() => commentsHook.handleAddComment((count) => setCommentCount(count))}
         onDeleteComment={(commentId) => commentsHook.handleDeleteComment(commentId, (count) => setCommentCount(count))}
       />
+      <div className="flex justify-between mt-4 gap-3">
+        {/* Left side buttons */}
+        <div className="flex gap-3">
+          <Button
+            className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
+            onClick={handleBack}
+          >
+            Back
+          </Button>
+          <Button
+            className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
+            onClick={() => reporting.setShowReportDialog(true)}
+            disabled={!userId}
+          >
+            Report Deal
+          </Button>
+        </div>
 
-      <div className="flex gap-3 mt-4">
-        <Button
-          className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
-          onClick={handleBack}
-        >
-          Back
-        </Button>
-        <Button
-          className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
-          onClick={() => reporting.setShowReportDialog(true)}
-          disabled={!userId}
-        >
-          Report Deal
-        </Button>
+        {/* Right side button */}
+        {userId === deal.created_by && (
+          <Button
+            className="bg-white text-blue-700 hover:bg-blue-50 border border-blue-200"
+            asChild
+          >
+            <Link href={`/deals/${deal.id}/edit`}>Edit Deal</Link>
+          </Button>
+        )}
       </div>
-
       <ReportDialog
         isOpen={reporting.showReportDialog}
         reportReason={reporting.reportReason}
@@ -228,8 +237,7 @@ export default function DealDetailPage() {
           reporting.setReportReason('');
         }}
       />
-
-      {isLoaded && position ? (
+      {position ? (
         <div className="w-full h-[300px] rounded-lg overflow-hidden shadow-md mt-6">
           <GoogleMap
             mapContainerStyle={{ width: '100%', height: '100%' }}
