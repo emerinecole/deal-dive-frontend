@@ -10,26 +10,25 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface MapViewProps {
-  deals: Deal[];
+  deals: DealWithDistance[];
+  userLocation?: { lat: number; lng: number } | null;
 }
 
-interface DealWithCoords extends Deal {
-  lat: number;
-  lng: number;
+interface DealWithDistance extends Deal {
+  distance?: number; // already calculated in Home
 }
 
 export default function MapView({ deals }: MapViewProps) {
   const UF_COORDS = { lat: 29.6535, lng: -82.3388 };
   const [mapCenter, setMapCenter] = useState(UF_COORDS);
   const [mapZoom, setMapZoom] = useState(13);
-  const [markers, setMarkers] = useState<DealWithCoords[]>([]);
-  const [selectedDealGroup, setSelectedDealGroup] = useState<DealWithCoords[] | null>(null);
+  const [markers, setMarkers] = useState<DealWithDistance[]>([]);
+  const [selectedDealGroup, setSelectedDealGroup] = useState<DealWithDistance[] | null>(null);
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  // Center map on user location if possible
   useEffect(() => {
     if (!navigator.geolocation || !navigator.permissions) return;
 
@@ -37,13 +36,12 @@ export default function MapView({ deals }: MapViewProps) {
       if (status.state === "granted" || status.state === "prompt") {
         navigator.geolocation.getCurrentPosition(
           (pos) => setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-          () => {} // fallback to default
+          () => {}
         );
       }
     });
   }, []);
 
-  // Reverse geocoding helper
   const geocodeAddress = (address: string): Promise<google.maps.GeocoderResult[]> => {
     return new Promise((resolve, reject) => {
       const geocoder = new google.maps.Geocoder();
@@ -54,16 +52,16 @@ export default function MapView({ deals }: MapViewProps) {
     });
   };
 
-  // Prepare markers
+  // Prepare markers with coordinates only
   useEffect(() => {
-    if (!(window as Window & { google?: typeof google })?.google || !deals.length) return;
+    if (!window.google || !deals.length) return;
 
     const resolveDeals = async () => {
-      const resolved: DealWithCoords[] = [];
+      const resolved: DealWithDistance[] = [];
 
       for (const deal of deals) {
         if (deal.latitude && deal.longitude) {
-          resolved.push({ ...deal, lat: deal.latitude, lng: deal.longitude });
+          resolved.push({ ...deal, latitude: deal.latitude, longitude: deal.longitude });
           continue;
         }
 
@@ -72,7 +70,7 @@ export default function MapView({ deals }: MapViewProps) {
             const results = await geocodeAddress(deal.address);
             if (results.length > 0) {
               const loc = results[0].geometry.location;
-              resolved.push({ ...deal, lat: loc.lat(), lng: loc.lng() });
+              resolved.push({ ...deal, latitude: loc.lat(), longitude: loc.lng() });
             }
           } catch {}
         }
@@ -84,17 +82,15 @@ export default function MapView({ deals }: MapViewProps) {
     resolveDeals();
   }, [deals]);
 
-  // Group deals at same coordinates
   const groupedMarkers = markers.reduce((groups, deal) => {
-    const key = `${deal.lat.toFixed(6)},${deal.lng.toFixed(6)}`;
+    const key = `${deal.latitude.toFixed(6)},${deal.longitude.toFixed(6)}`;
     if (!groups[key]) groups[key] = [];
     groups[key].push(deal);
     return groups;
-  }, {} as Record<string, DealWithCoords[]>);
+  }, {} as Record<string, DealWithDistance[]>);
 
-  // Search location
   const handleSearch = async () => {
-    if (!searchQuery.trim() || !(window as Window & { google?: typeof google })?.google) return;
+    if (!searchQuery.trim() || !window.google) return;
 
     setIsSearching(true);
     try {
@@ -133,7 +129,7 @@ export default function MapView({ deals }: MapViewProps) {
   const getMarkerIcon = (key: string) => {
     const isActive =
       hoveredKey === key ||
-      selectedDealGroup?.[0]?.lat.toFixed(6) + "," + selectedDealGroup?.[0]?.lng.toFixed(6) === key;
+      selectedDealGroup?.[0]?.latitude.toFixed(6) + "," + selectedDealGroup?.[0]?.longitude.toFixed(6) === key;
     const fillColor = isActive ? "#991b1b" : "#dc2626";
     return {
       path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
@@ -146,13 +142,13 @@ export default function MapView({ deals }: MapViewProps) {
     };
   };
 
-  if (!(window as Window & { google?: typeof google })?.google) {
+  if (!window.google) {
     return (
       <div className="flex justify-center items-center h-64">
         <p className="text-blue-700">Loading Map...</p>
       </div>
     );
-  }  
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 space-y-6 p-6">
@@ -163,7 +159,7 @@ export default function MapView({ deals }: MapViewProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-600" />
             <Input
               type="text"
-              placeholder="Search for a location (e.g., Gainesville, FL)..."
+              placeholder="Search for a location..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -194,7 +190,7 @@ export default function MapView({ deals }: MapViewProps) {
         </div>
       </div>
 
-      {/* 🗺️ Map Container */}
+      {/* Map */}
       <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-blue-100 shadow-2xl overflow-hidden">
         <div className="w-full h-[600px]">
           <GoogleMap
@@ -202,60 +198,37 @@ export default function MapView({ deals }: MapViewProps) {
             center={mapCenter}
             zoom={mapZoom}
             mapContainerStyle={{ width: "100%", height: "100%" }}
-            options={{
-              mapTypeControl: false,
-              streetViewControl: false,
-              fullscreenControl: true,
-            }}
+            options={{ mapTypeControl: false, streetViewControl: false, fullscreenControl: true }}
           >
             {Object.entries(groupedMarkers).map(([key, dealsAtLocation]) => {
-              const { lat, lng } = dealsAtLocation[0];
+              const { latitude, longitude } = dealsAtLocation[0];
               const dealCount = dealsAtLocation.length;
 
               return (
                 <Marker
                   key={key}
-                  position={{ lat, lng }}
+                  position={{ lat: latitude, lng: longitude }}
                   onClick={() => setSelectedDealGroup(dealsAtLocation)}
                   onMouseOver={() => setHoveredKey(key)}
                   onMouseOut={() => setHoveredKey(null)}
                   icon={getMarkerIcon(key)}
-                  label={
-                    dealCount > 1
-                      ? {
-                          text: String(dealCount),
-                          color: "#ffffff",
-                          fontSize: "12px",
-                          fontWeight: "bold",
-                        }
-                      : undefined
-                  }
+                  label={dealCount > 1 ? { text: String(dealCount), color: "#fff", fontSize: "12px", fontWeight: "bold" } : undefined}
                 />
               );
             })}
 
             {selectedDealGroup && (
               <InfoWindow
-                position={{
-                  lat: selectedDealGroup[0].lat,
-                  lng: selectedDealGroup[0].lng,
-                }}
+                position={{ lat: selectedDealGroup[0].latitude, lng: selectedDealGroup[0].longitude }}
                 onCloseClick={() => setSelectedDealGroup(null)}
                 options={{ pixelOffset: new google.maps.Size(0, -40) }}
               >
                 <div className="p-1 max-w-[320px] max-h-[400px] overflow-y-auto">
                   <div className="space-y-3">
-                    {selectedDealGroup.map((deal, index) => {
+                    {selectedDealGroup.map((deal) => {
                       const savings = calculateSavings(deal.original_price, deal.discounted_price);
-
                       return (
-                        <div
-                          key={deal.id}
-                          className={cn(
-                            "pb-3",
-                            index < selectedDealGroup.length - 1 && "border-b border-blue-100"
-                          )}
-                        >
+                        <div key={deal.id} className="pb-3 border-b border-blue-100 last:border-b-0">
                           <div className="flex items-start justify-between gap-2 mb-2 min-h-[40px]">
                             <h4 className="font-bold text-sm text-blue-900 leading-tight flex-1 line-clamp-2">
                               {deal.title}
@@ -269,16 +242,23 @@ export default function MapView({ deals }: MapViewProps) {
                           </div>
 
                           <div className="h-[18px] mb-2 overflow-hidden">
-                            <div className="flex items-start gap-2 text-xs text-blue-600">
-                              <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                              <span className="line-clamp-1">{deal.address}</span>
-                            </div>
+                          <div className="flex items-start gap-2 text-xs text-blue-600">
+                            <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                            {/* Truncate the address */}
+                            <span className="line-clamp-1">
+                              {deal.address.length > 25 ? deal.address.slice(0, 25) + "…" : deal.address}
+                            </span>
+                            {/* Distance */}
+                            {deal.distance !== undefined && (
+                              <span className="ml-1 text-xs text-gray-500">
+                                ({deal.distance.toFixed(1)} mi)
+                              </span>
+                            )}
+                          </div>
                           </div>
 
                           <div className="h-[48px] mb-3 overflow-hidden">
-                            <p className="text-xs text-blue-800 line-clamp-3 leading-relaxed">
-                              {deal.description}
-                            </p>
+                            <p className="text-xs text-blue-800 line-clamp-3 leading-relaxed">{deal.description}</p>
                           </div>
 
                           <div className="h-[20px]">

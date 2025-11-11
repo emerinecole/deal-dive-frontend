@@ -5,13 +5,16 @@ import {
   DollarSign, 
   TrendingDown, 
   ArrowRight,
-  Sparkles,
   Package
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface DealWithDistance extends Deal {
+  distance?: number; // distance in miles
+}
+
 interface ListViewProps {
-  deals: Deal[];
+  deals: DealWithDistance[];
 }
 
 export default function ListView({ deals }: ListViewProps) {
@@ -32,7 +35,6 @@ export default function ListView({ deals }: ListViewProps) {
             href="/create"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:scale-105 transition-transform shadow-lg shadow-blue-300/50"
           >
-            <Sparkles className="h-4 w-4" />
             Create First Deal
           </Link>
         </div>
@@ -59,8 +61,8 @@ export default function ListView({ deals }: ListViewProps) {
               href={`/deals/${deal.id}?from=list`}
               className="group"
             >
-              <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-blue-200 shadow-md hover:shadow-lg hover:shadow-blue-200/40 transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full">
-                {/* Savings Badge */}
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-blue-200 shadow-md hover:shadow-lg hover:shadow-blue-200/40 transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full relative">
+                
                 {savings > 0 && (
                   <div className="absolute top-4 right-4 z-10">
                     <div className="bg-gradient-to-br from-blue-400 to-blue-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
@@ -70,27 +72,30 @@ export default function ListView({ deals }: ListViewProps) {
                   </div>
                 )}
 
-                {/* Gradient Header Line */}
                 <div className="h-2 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-300" />
 
                 <div className="p-5 flex flex-col flex-1 text-blue-900">
-                  {/* Title */}
                   <h3 className="text-lg font-bold mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
                     {deal.title}
                   </h3>
 
-                  {/* Location */}
-                  <div className="flex items-start gap-2 text-sm text-blue-700/80 mb-2">
-                    <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-500" />
-                    <span className="line-clamp-1">{deal.address}</span>
+                  {/* Location + Distance */}
+                  <div className="flex items-center gap-2 text-sm text-blue-700/80 mb-2">
+                    <MapPin className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                    <span className="truncate max-w-[180px]">
+                      {deal.address}
+                    </span>
+                    {deal.distance !== undefined && (
+                      <span className="flex-shrink-0 text-xs text-gray-500">
+                        ({deal.distance.toFixed(1)} mi)
+                      </span>
+                    )}
                   </div>
 
-                  {/* Description */}
                   <p className="text-sm text-blue-800/70 line-clamp-3 mb-4 leading-relaxed">
                     {deal.description}
                   </p>
 
-                  {/* Pricing */}
                   <div className="pt-3 border-t border-blue-200 mt-auto">
                     <div className="flex items-end justify-between mt-3">
                       <div className="space-y-1">
@@ -115,7 +120,6 @@ export default function ListView({ deals }: ListViewProps) {
                     </div>
                   </div>
 
-                  {/* View Details Button */}
                   <div className="mt-4">
                     <div
                       className={cn(
