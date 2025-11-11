@@ -31,14 +31,14 @@ export interface CreateDealInput {
 export interface UpdateDealInput {
   title?: string;
   description?: string;
-  disounted_price?: number;
+  discounted_price?: number;
   original_price?: number;
   address?: string;
   upvotes?: number;
   downvotes?: number;
   comment_count?: number;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface DealListParams {

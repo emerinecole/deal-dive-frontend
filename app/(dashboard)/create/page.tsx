@@ -495,7 +495,8 @@ export default function CreatePage() {
                   </div>
                 </div>
 
-                <LocationPicker formData={location} setFormData={setLocation} />
+                {/* Pass useUserLocation prop here */}
+                <LocationPicker formData={location} setFormData={setLocation} useUserLocation />
 
                 <div className="flex gap-3 pt-4">
                   <Button

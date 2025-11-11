@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import { GoogleMap, Marker } from "@react-google-maps/api";
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
 import { Input } from "@/components/ui/input";
 
@@ -13,7 +13,8 @@ export type FormData = {
 
 interface LocationPickerProps {
   formData: FormData;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  setFormData: (loc: FormData) => void;
+  useUserLocation?: boolean;
 }
 
 // Autocomplete input component
@@ -71,41 +72,23 @@ function AutocompleteInput({ formData, setFormData }: LocationPickerProps) {
 }
 
 // Main LocationPicker component
-export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    libraries: ["places"] as ("places")[],
-  });
+export function LocationPicker({ formData, setFormData, useUserLocation }: LocationPickerProps) {
 
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  // University of Florida default coordinates
-  const UF_COORDS = { lat: 29.6535, lng: -82.3388 };
-  const [center, setCenter] = useState(UF_COORDS);
+  // Default coordinates (University of Florida)
+  const DEFAULT_COORDS = { lat: 29.6535, lng: -82.3388 };
+  const [center, setCenter] = useState(formData.lat && formData.lng ? { lat: formData.lat, lng: formData.lng } : DEFAULT_COORDS);
   const [error, setError] = useState<string | null>(null);
 
-  // Check location permission and update center if granted
+  // Only attempt user location if prop is true
   useEffect(() => {
+    if (!useUserLocation) return;
+
     if (!navigator.geolocation || !navigator.permissions) return;
 
     navigator.permissions.query({ name: "geolocation" }).then((status) => {
-      if (status.state === "granted") {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-
-          try {
-            const geocoder = new google.maps.Geocoder();
-            const response = await geocoder.geocode({ location: { lat, lng } });
-            if (!response?.results?.length) return;
-            const firstResult = response.results[0];
-            setFormData({ address: firstResult.formatted_address, lat, lng });
-            setCenter({ lat, lng });
-          } catch {
-            setError("Error reverse geocoding your location.");
-          }
-        });
-      } else if (status.state === "prompt") {
+      if (status.state === "granted" || status.state === "prompt") {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
             const lat = pos.coords.latitude;
@@ -124,14 +107,10 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
           () => setError("Permission denied or unable to get your location.")
         );
       } else if (status.state === "denied") {
-        setError("Location access denied. Using default location (UF).");
+        setError("Location access denied. Using default location.");
       }
-
-      status.onchange = () => {
-        if (status.state === "granted") window.location.reload();
-      };
     });
-  }, [setFormData]);
+  }, [useUserLocation, setFormData]);
 
   const onMapLoad = (map: google.maps.Map) => {
     mapRef.current = map;
@@ -142,7 +121,6 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
     if (!e.latLng) return;
     const lat = e.latLng.lat();
     const lng = e.latLng.lng();
-
     try {
       const geocoder = new google.maps.Geocoder();
       const response = await geocoder.geocode({ location: { lat, lng } });
@@ -177,8 +155,6 @@ export function LocationPicker({ formData, setFormData }: LocationPickerProps) {
       mapRef.current.panTo({ lat: formData.lat, lng: formData.lng });
     }
   }, [formData.lat, formData.lng]);
-
-  if (!isLoaded) return <div>Loading Map...</div>;
 
   return (
     <div className="flex flex-col space-y-2">
