@@ -133,8 +133,9 @@ export default function DealDetailPage() {
   }, [id, userId, voting]);
 
   const handleBack = () => {
-    if (from === 'map') router.push('/?tab=map');
-    else router.push('/?tab=list');
+    if (from === 'my-deals') router.push('/my-deals');     
+    else if (from === 'map') router.push('/?tab=map');      
+    else router.push('/?tab=list');                         
   };
 
   if (loading)
