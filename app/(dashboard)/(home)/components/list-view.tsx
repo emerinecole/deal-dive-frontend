@@ -49,11 +49,19 @@ export default function ListView({ deals }: ListViewProps) {
     return 0;
   };
 
+  const capitalizeWords = (str: string) =>
+    str
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 p-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {deals.map((deal) => {
           const savings = calculateSavings(deal.original_price, deal.discounted_price);
+          const visibleTags = deal.tags?.slice(0, 3) || [];
+          const hasMoreTags = deal.tags && deal.tags.length > 3;
 
           return (
             <Link
@@ -92,9 +100,39 @@ export default function ListView({ deals }: ListViewProps) {
                     )}
                   </div>
 
-                  <p className="text-sm text-blue-800/70 line-clamp-3 mb-4 leading-relaxed">
+                  {/* Description */}
+                  <p className="text-sm text-blue-800/70 line-clamp-3 mb-3 leading-relaxed">
                     {deal.description}
                   </p>
+
+                  {/*Categories & Tags */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {deal.categories && deal.categories.length > 0 && (
+                      deal.categories.map((cat, idx) => (
+                        <span
+                          key={`cat-${idx}`}
+                          className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full border border-blue-200"
+                        >
+                          {capitalizeWords(cat)}
+                        </span>
+                      ))
+                    )}
+
+                    {visibleTags.map((tag, idx) => (
+                      <span
+                        key={`tag-${idx}`}
+                        className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full border border-green-200"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+
+                    {hasMoreTags && (
+                      <span className="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-1 rounded-full border border-gray-200">
+                        …
+                      </span>
+                    )}
+                  </div>
 
                   <div className="pt-3 border-t border-blue-200 mt-auto">
                     <div className="flex items-end justify-between mt-3">

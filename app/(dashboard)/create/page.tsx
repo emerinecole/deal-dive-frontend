@@ -86,8 +86,8 @@ export default function CreatePage() {
         address: location.address,
         latitude: location.lat,
         longitude: location.lng,
-        // category,
-        // tags,
+        tags: tags,
+        categories: [category],
       };
 
       await createDeal(dealData);
@@ -407,7 +407,7 @@ export default function CreatePage() {
                     <option value="groceries">Groceries</option>
                     <option value="bar">Bar (Drinks)</option>
                     <option value="restaurant">Restaurant (Food)</option>
-                    <option value="department_store">Department Store</option>
+                    <option value="department store">Department Store</option>
                   </select>
                 </div>
 

@@ -15,6 +15,8 @@ export interface Deal {
   latitude: number;
   longitude: number;
   address: string;
+  tags: string[];
+  categories: string[];
 }
 
 export interface CreateDealInput {
@@ -26,6 +28,8 @@ export interface CreateDealInput {
   created_by?: UUID;
   latitude: number;
   longitude: number;
+  tags: string[];
+  categories: string[];
 }
 
 export interface UpdateDealInput {
@@ -39,6 +43,8 @@ export interface UpdateDealInput {
   comment_count?: number;
   latitude?: number;
   longitude?: number;
+  tags?: string[];
+  categories?: string[];
 }
 
 export interface DealListParams {
