@@ -41,7 +41,7 @@ export default function MyDealsPage() {
 
         setDeals(userDeals);
       } catch (error) {
-        console.error('Error fetching deals:', error);
+        alert('Error fetching deals');
         setDeals([]);
       } finally {
         setLoading(false);
