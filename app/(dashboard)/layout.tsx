@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, Plus, TrendingUp, Bookmark, User } from "lucide-react";
+import { Home, Plus, Bookmark, User } from "lucide-react";
 import AuthRoute from "@/app/components/protected-route/auth-route";
 import Image from "next/image";
 import {
