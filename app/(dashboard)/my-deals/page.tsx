@@ -40,7 +40,7 @@ export default function MyDealsPage() {
         const userDeals = allDeals.filter(deal => deal.created_by === user.id);
 
         setDeals(userDeals);
-      } catch (error) {
+      } catch {
         alert('Error fetching deals');
         setDeals([]);
       } finally {
