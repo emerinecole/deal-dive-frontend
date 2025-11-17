@@ -216,67 +216,111 @@ export default function MapView({ deals }: MapViewProps) {
                 />
               );
             })}
+          {selectedDealGroup && (
+            <InfoWindow
+              position={{
+                lat: selectedDealGroup[0].latitude,
+                lng: selectedDealGroup[0].longitude,
+              }}
+              onCloseClick={() => setSelectedDealGroup(null)}
+              options={{ pixelOffset: new google.maps.Size(0, -40) }}
+            >
+              <div className="p-1 max-w-[320px] max-h-[400px] overflow-y-auto">
+                <div className="space-y-3">
+                  {selectedDealGroup.map((deal) => {
+                    const savings = calculateSavings(deal.original_price, deal.discounted_price);
+                    const visibleTags = deal.tags?.slice(0, 3) || [];
+                    const hasMoreTags = deal.tags && deal.tags.length > 3;
 
-            {selectedDealGroup && (
-              <InfoWindow
-                position={{ lat: selectedDealGroup[0].latitude, lng: selectedDealGroup[0].longitude }}
-                onCloseClick={() => setSelectedDealGroup(null)}
-                options={{ pixelOffset: new google.maps.Size(0, -40) }}
-              >
-                <div className="p-1 max-w-[320px] max-h-[400px] overflow-y-auto">
-                  <div className="space-y-3">
-                    {selectedDealGroup.map((deal) => {
-                      const savings = calculateSavings(deal.original_price, deal.discounted_price);
-                      return (
-                        <div key={deal.id} className="pb-3 border-b border-blue-100 last:border-b-0">
-                          <div className="flex items-start justify-between gap-2 mb-2 min-h-[40px]">
-                            <h4 className="font-bold text-sm text-blue-900 leading-tight flex-1 line-clamp-2">
-                              {deal.title}
-                            </h4>
-                            {savings > 0 && (
-                              <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 flex-shrink-0 shadow-sm h-fit">
-                                <TrendingDown className="h-3 w-3" />
-                                {savings}%
-                              </div>
-                            )}
-                          </div>
+                    const capitalizeWords = (str: string) =>
+                      str
+                        .split(" ")
+                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(" ");
 
-                          <div className="h-[18px] mb-2 overflow-hidden">
+                    return (
+                      <div key={deal.id} className="pb-3 border-b border-blue-100 last:border-b-0">
+                        <div className="flex items-start justify-between gap-2 mb-2 min-h-[40px]">
+                          <h4 className="font-bold text-sm text-blue-900 leading-tight flex-1 line-clamp-2">
+                            {deal.title}
+                          </h4>
+                          {savings > 0 && (
+                            <div className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 flex-shrink-0 shadow-sm h-fit">
+                              <TrendingDown className="h-3 w-3" />
+                              {savings}%
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Address + Distance */}
+                        <div className="h-[18px] mb-2 overflow-hidden">
                           <div className="flex items-start gap-2 text-xs text-blue-600">
                             <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                            {/* Truncate the address */}
                             <span className="line-clamp-1">
-                              {deal.address.length > 25 ? deal.address.slice(0, 25) + "…" : deal.address}
+                              {deal.address.length > 25
+                                ? deal.address.slice(0, 25) + "…"
+                                : deal.address}
                             </span>
-                            {/* Distance */}
                             {deal.distance !== undefined && (
                               <span className="ml-1 text-xs text-gray-500">
                                 ({deal.distance.toFixed(1)} mi)
                               </span>
                             )}
                           </div>
-                          </div>
-
-                          <div className="h-[48px] mb-3 overflow-hidden">
-                            <p className="text-xs text-blue-800 line-clamp-3 leading-relaxed">{deal.description}</p>
-                          </div>
-
-                          <div className="h-[20px]">
-                            <Link
-                              href={`/deals/${deal.id}?from=map`}
-                              className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors group"
-                            >
-                              View Full Details
-                              <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                            </Link>
-                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
+
+                        {/* Description */}
+                        <div className="h-[48px] mb-2 overflow-hidden">
+                          <p className="text-xs text-blue-800 line-clamp-3 leading-relaxed">
+                            {deal.description}
+                          </p>
+                        </div>
+
+                        {/* Categories & Tags */}
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {deal.categories &&
+                            deal.categories.map((cat, idx) => (
+                              <span
+                                key={`cat-${idx}`}
+                                className="bg-blue-100 text-blue-800 text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-blue-200"
+                              >
+                                {capitalizeWords(cat)}
+                              </span>
+                            ))}
+
+                          {visibleTags.map((tag, idx) => (
+                            <span
+                              key={`tag-${idx}`}
+                              className="bg-green-100 text-green-800 text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-green-200"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+
+                          {hasMoreTags && (
+                            <span className="bg-gray-100 text-gray-700 text-[10px] font-medium px-1.5 py-0.5 rounded-full border border-gray-200">
+                              …
+                            </span>
+                          )}
+                        </div>
+
+                        {/*View Details */}
+                        <div className="h-[20px]">
+                          <Link
+                            href={`/deals/${deal.id}?from=map`}
+                            className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors group"
+                          >
+                            View Full Details
+                            <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </InfoWindow>
-            )}
+              </div>
+            </InfoWindow>
+          )}
           </GoogleMap>
         </div>
       </div>

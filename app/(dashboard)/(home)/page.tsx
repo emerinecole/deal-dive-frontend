@@ -26,10 +26,23 @@ export default function Home() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [maxDistance, setMaxDistance] = useState('');
+  
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [tagInput, setTagInput] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "list";
+
+
+  
+  const categories = [
+    { label: 'Restaurant (Food)', value: 'restaurant' },
+    { label: 'Bar (Drinks)', value: 'bar' },
+    { label: 'Groceries', value: 'groceries' },
+    { label: 'Department Store', value: 'department store' },
+  ];
 
   // Get user's location
   useEffect(() => {
@@ -60,7 +73,6 @@ export default function Home() {
         setLoading(false);
       }
     };
-
     fetchDeals();
   }, []);
 
@@ -102,6 +114,19 @@ export default function Home() {
 
   const [filtersApplied, setFiltersApplied] = useState(false);
 
+  // Tag helpers
+  const handleAddTag = () => {
+    const trimmed = tagInput.trim().toLowerCase();
+    if (trimmed && !selectedTags.includes(trimmed)) {
+      setSelectedTags(prev => [...prev, trimmed]);
+    }
+    setTagInput('');
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setSelectedTags(prev => prev.filter(t => t !== tagToRemove));
+  };
+
   // Apply filters
   const applyFilters = () => {
     let result = deals.map((deal) => {
@@ -119,6 +144,12 @@ export default function Home() {
     if (minPrice) result = result.filter(d => d.discounted_price >= parseFloat(minPrice));
     if (maxPrice) result = result.filter(d => d.discounted_price <= parseFloat(maxPrice));
     if (maxDistance) result = result.filter(d => d.distance <= parseFloat(maxDistance));
+    if (selectedCategory) result = result.filter(d => d.categories?.includes(selectedCategory));
+    if (selectedTags.length > 0) {
+      result = result.filter(d =>
+        selectedTags.every(tag => d.tags?.map(t => t.toLowerCase()).includes(tag))
+      );
+    }
 
     setFilteredDeals(result);
     setFiltersApplied(true);
@@ -129,6 +160,9 @@ export default function Home() {
     setMinPrice('');
     setMaxPrice('');
     setMaxDistance('');
+    setSelectedCategory('');
+    setTagInput('');
+    setSelectedTags([]);
     setFiltersApplied(false);
 
     const result = deals.map((deal) => {
@@ -227,6 +261,65 @@ export default function Home() {
               />
             </div>
 
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Category</label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full border border-gray-300 rounded-md p-2"
+              >
+                <option value="">All</option>
+                {categories.map((cat) => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Tags</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type a tag and press Enter"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  className="h-12 text-base rounded-xl border-blue-200 focus-visible:ring-blue-200 transition-all"
+                />
+                <Button
+                  type="button"
+                  onClick={handleAddTag}
+                  className="h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Add
+                </Button>
+              </div>
+
+              {selectedTags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedTags.map((tag) => (
+                    <div
+                      key={tag}
+                      className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+                    >
+                      <span>{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="ml-1 text-blue-500 hover:text-blue-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-2 mt-2">
               <Button
                 className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
@@ -243,7 +336,9 @@ export default function Home() {
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 )}
                 onClick={clearFilters}
-                disabled={!minPrice && !maxPrice && !maxDistance} // optionally disable if no filters
+                disabled={
+                  !minPrice && !maxPrice && !maxDistance && !selectedCategory && selectedTags.length === 0
+                }
               >
                 Clear
               </Button>

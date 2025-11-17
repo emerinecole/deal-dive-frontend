@@ -2,7 +2,6 @@ export const APP_ROUTES = {
   HOME: "/",
   ACCOUNT: "/account",
   CREATE: "/create",
-  HOT: "/hot",
   SAVED: "/saved",
   MY_DEALS: "/my-deals",
   SEARCH_PAGE: "/search",

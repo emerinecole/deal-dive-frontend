@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, Plus, TrendingUp, Bookmark, User } from "lucide-react";
+import { Home, Plus, Bookmark, User } from "lucide-react";
 import AuthRoute from "@/app/components/protected-route/auth-route";
 import Image from "next/image";
 import {
@@ -31,7 +31,6 @@ import LogoutButton from "@/components/ui/logout-button";
 const navigationItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Create", url: "/create", icon: Plus },
-  { title: "Hot Deals", url: "/hot", icon: TrendingUp },
   { title: "Saved", url: "/saved", icon: Bookmark },
   { title: "My Deals", url: "/my-deals", icon: User }, // New page added
 ];
