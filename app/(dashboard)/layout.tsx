@@ -31,7 +31,6 @@ import LogoutButton from "@/components/ui/logout-button";
 const navigationItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Create", url: "/create", icon: Plus },
-  { title: "Hot Deals", url: "/hot", icon: TrendingUp },
   { title: "Saved", url: "/saved", icon: Bookmark },
   { title: "My Deals", url: "/my-deals", icon: User }, // New page added
 ];
