@@ -13,6 +13,7 @@ import { UUID } from 'crypto';
 import { useVoting } from './hooks/use-voting';
 import { useComments } from './hooks/use-comments';
 import { useReporting } from './hooks/use-reporting';
+import { useSaveDeal } from './hooks/use-save-deal';
 import { DealHeader } from './components/deal-header';
 import { VotingSection } from './components/voting-section';
 import { CommentSection } from './components/comment-section';
@@ -32,7 +33,6 @@ export default function DealDetailPage() {
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
   const [userId, setUserId] = useState<UUID | null>(null);
 
   const [commentCount, setCommentCount] = useState(0);
@@ -44,6 +44,7 @@ export default function DealDetailPage() {
   const voting = useVoting(deal, userId);
   const commentsHook = useComments(id, userId);
   const reporting = useReporting(id, userId);
+  const saveDeal = useSaveDeal(id, userId);
 
   useEffect(() => {
     const supabase = createClient();
@@ -107,7 +108,8 @@ export default function DealDetailPage() {
     };
 
     fetchComments();
-  }, [id, commentsHook]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -130,7 +132,8 @@ export default function DealDetailPage() {
     };
 
     fetchVotes();
-  }, [id, userId, voting]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, userId]);
 
   const handleBack = () => {
     if (from === 'my-deals') router.push('/my-deals');     
@@ -166,7 +169,13 @@ export default function DealDetailPage() {
 
   return (
     <div className="p-6 space-y-6 bg-gradient-to-br from-white via-blue-50 to-blue-100 min-h-screen">
-      <DealHeader deal={deal} saved={saved} onSaveToggle={() => setSaved((s) => !s)} />
+      <DealHeader
+        deal={deal}
+        saved={saveDeal.saved}
+        saveBusy={saveDeal.saveBusy}
+        disabled={!userId}
+        onSaveToggle={saveDeal.handleToggleSave}
+      />
 
       <p className="text-sm text-blue-900">{deal.description}</p>
 

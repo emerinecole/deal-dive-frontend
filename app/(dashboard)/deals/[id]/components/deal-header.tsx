@@ -1,13 +1,15 @@
 import { Deal } from '@/lib/types/deals';
-import { Button } from '@/components/ui/button';
+import { SaveButton } from './save-button';
 
 interface DealHeaderProps {
   deal: Deal;
   saved: boolean;
+  saveBusy: boolean;
+  disabled: boolean;
   onSaveToggle: () => void;
 }
 
-export function DealHeader({ deal, saved, onSaveToggle }: DealHeaderProps) {
+export function DealHeader({ deal, saved, saveBusy, disabled, onSaveToggle }: DealHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
       <div className="space-y-2">
@@ -55,13 +57,12 @@ export function DealHeader({ deal, saved, onSaveToggle }: DealHeaderProps) {
           </div>
         )}
         <div className="mt-2">
-          <Button
-            variant={saved ? 'default' : 'secondary'}
-            size="sm"
-            onClick={onSaveToggle}
-          >
-            {saved ? 'Saved' : 'Save'}
-          </Button>
+          <SaveButton
+            saved={saved}
+            busy={saveBusy}
+            disabled={disabled}
+            onToggle={onSaveToggle}
+          />
         </div>
       </div>
     </div>
