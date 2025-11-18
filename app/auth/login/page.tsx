@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/services/auth-service";
 import { APP_ROUTES } from "@/constants/app-routes";
-import SignupSocialAuth from "../signup/components/signup-social-auth";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -104,17 +103,10 @@ export default function LoginPage() {
 
           {/* Main Card */}
           <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-blue-200 shadow-2xl shadow-blue-200/10 p-8">
-            <SignupSocialAuth />
 
             {/* Divider */}
             <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-blue-200/40" />
-              </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-blue-700/80">
-                  Or continue with email
-                </span>
               </div>
             </div>
 
