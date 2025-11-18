@@ -136,9 +136,22 @@ export default function DealDetailPage() {
   }, [id, userId]);
 
   const handleBack = () => {
-    if (from === 'my-deals') router.push('/my-deals');     
-    else if (from === 'map') router.push('/?tab=map');      
-    else router.push('/?tab=list');                         
+    switch (from) {
+      case 'my-deals':
+        router.push('/my-deals');
+        break;
+      case 'map':
+        router.push('/?tab=map');
+        break;
+      case 'list':
+        router.push('/?tab=list');
+        break;
+      case 'saved':
+        router.push('/saved');
+        break;
+      default:
+        router.back();
+    }
   };
 
   if (loading)
