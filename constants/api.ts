@@ -28,4 +28,9 @@ export const API = {
     LIST: (dealId: string) => `/deals/${dealId}/reports`,
     DELETE: (reportId: string) => `/reports/${reportId}`,
   },
+  SAVED_DEALS: {
+    SAVE: (dealId: string) => `/deals/${dealId}/save`,
+    UNSAVE: (dealId: string) => `/deals/${dealId}/save`,
+    LIST: "/deals/saved",
+  }
 };

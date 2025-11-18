@@ -33,6 +33,7 @@ class APIClient {
     try {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
+      console.log(session?.access_token);
       
       if (!session?.access_token) {
         return {
