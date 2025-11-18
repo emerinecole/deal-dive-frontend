@@ -4,10 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, TrendingDown, ArrowRight, Loader2 } from "lucide-react";
+import { Search, MapPin, TrendingDown, ArrowRight, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Deal } from "@/lib/types/deals";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getVotes } from "@/lib/services/vote-service";
 
 interface MapViewProps {
   deals: DealWithDistance[];
@@ -16,6 +17,11 @@ interface MapViewProps {
 
 interface DealWithDistance extends Deal {
   distance?: number; // already calculated in Home
+}
+
+interface DealVotes {
+  upvotes: number;
+  downvotes: number;
 }
 
 export default function MapView({ deals }: MapViewProps) {
@@ -27,7 +33,22 @@ export default function MapView({ deals }: MapViewProps) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [votesMap, setVotesMap] = useState<Record<string, DealVotes>>({});
   const mapRef = useRef<google.maps.Map | null>(null);
+
+  useEffect(() => {
+    // Fetch votes for all deals
+    deals.forEach(async (deal) => {
+      try {
+        const voteData = await getVotes(String(deal.id));
+        const upvotes = voteData.votes.filter(v => v.vote_type === 1).length;
+        const downvotes = voteData.votes.filter(v => v.vote_type === -1).length;
+        setVotesMap(prev => ({ ...prev, [deal.id]: { upvotes, downvotes } }));
+      } catch {
+        alert('Failed to fetch votes for deal');
+      }
+    });
+  }, [deals]);
 
   useEffect(() => {
     if (!navigator.geolocation || !navigator.permissions) return;
@@ -231,6 +252,7 @@ export default function MapView({ deals }: MapViewProps) {
                     const savings = calculateSavings(deal.original_price, deal.discounted_price);
                     const visibleTags = deal.tags?.slice(0, 3) || [];
                     const hasMoreTags = deal.tags && deal.tags.length > 3;
+                    const voteCounts = votesMap[deal.id] ?? { upvotes: 0, downvotes: 0 };
 
                     const capitalizeWords = (str: string) =>
                       str
@@ -302,6 +324,18 @@ export default function MapView({ deals }: MapViewProps) {
                               …
                             </span>
                           )}
+                        </div>
+
+                        {/* Vote counts */}
+                        <div className="flex items-center gap-3 text-xs text-blue-700 mb-2">
+                          <div className="flex items-center gap-1">
+                            <ThumbsUp className="h-3 w-3" />
+                            <span>{voteCounts.upvotes}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <ThumbsDown className="h-3 w-3" />
+                            <span>{voteCounts.downvotes}</span>
+                          </div>
                         </div>
 
                         {/*View Details */}

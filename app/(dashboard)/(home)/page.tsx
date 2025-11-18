@@ -7,6 +7,7 @@ import MapView from './components/map-view';
 import ListView from './components/list-view';
 import { getDeals } from '@/lib/services/deal-service';
 import { getSavedDeals } from '@/lib/services/saved-deal-service';
+import { getVotes } from '@/lib/services/vote-service';
 import { Deal } from '@/lib/types/deals';
 import { MapIcon, List, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,10 +16,12 @@ import { cn } from '@/lib/utils';
 
 interface DealWithDistance extends Deal {
   distance: number;
+  upvotes: number;
+  downvotes: number;
 }
 
 export default function Home() {
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const [deals, setDeals] = useState<DealWithDistance[]>([]);
   const [filteredDeals, setFilteredDeals] = useState<DealWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +33,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [minUpvotes, setMinUpvotes] = useState('');
+  const [maxDownvotes, setMaxDownvotes] = useState('');
 
   const [savedOnly, setSavedOnly] = useState(false);
   const [savedDealIds, setSavedDealIds] = useState<number[]>([]);
@@ -49,25 +54,35 @@ export default function Home() {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        () => alert("Failed to get location:"),
+        (position) => setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude }),
+        () => alert("Failed to get location"),
         { enableHighAccuracy: true }
       );
     }
   }, []);
 
-  // Fetch all deals
+  // Fetch deals and vote counts
   useEffect(() => {
     const fetchDeals = async () => {
       try {
         setLoading(true);
         const dealsData = await getDeals();
-        setDeals(dealsData);
+
+        // Add vote counts to each deal
+        const dealsWithVotes: DealWithDistance[] = await Promise.all(
+          dealsData.map(async (deal) => {
+            try {
+              const voteData = await getVotes(String(deal.id));
+              const upvotes = voteData.votes.filter(v => v.vote_type === 1).length;
+              const downvotes = voteData.votes.filter(v => v.vote_type === -1).length;
+              return { ...deal, upvotes, downvotes, distance: 0 };
+            } catch {
+              return { ...deal, upvotes: 0, downvotes: 0, distance: 0 };
+            }
+          })
+        );
+
+        setDeals(dealsWithVotes);
       } catch {
         setError('Failed to load deals');
       } finally {
@@ -77,7 +92,7 @@ export default function Home() {
     fetchDeals();
   }, []);
 
-  // Fetch saved deals IDs for the toggle
+  // Fetch saved deals IDs for toggle
   useEffect(() => {
     const fetchSavedDealsIds = async () => {
       try {
@@ -90,40 +105,26 @@ export default function Home() {
     fetchSavedDealsIds();
   }, []);
 
-  // Haversine formula to calculate distance in miles
+  // Haversine formula
   const getDistanceInMiles = (lat1: number, lng1: number, lat2: number, lng2: number) => {
-    const R = 3958.8; // Radius of Earth in miles
+    const R = 3958.8;
     const toRad = (deg: number) => deg * (Math.PI / 180);
-
     const dLat = toRad(lat2 - lat1);
     const dLng = toRad(lng2 - lng1);
-
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
     return R * c;
   };
 
-  // Calculate distance for all deals as soon as we have user location
+  // Update distances when user location or deals change
   useEffect(() => {
-    if (!deals.length) return;
-
-    const dealsWithDistance: DealWithDistance[] = deals.map((deal) => {
-      const distance = userLocation
-        ? getDistanceInMiles(
-            userLocation.lat,
-            userLocation.lng,
-            deal.latitude,
-            deal.longitude
-          )
-        : 0;
-      return { ...deal, distance };
-    });
-
-    setFilteredDeals(dealsWithDistance);
+    if (!deals.length || !userLocation) return;
+    const updatedDeals = deals.map(deal => ({
+      ...deal,
+      distance: getDistanceInMiles(userLocation.lat, userLocation.lng, deal.latitude, deal.longitude)
+    }));
+    setFilteredDeals(updatedDeals);
   }, [deals, userLocation]);
 
   const [filtersApplied, setFiltersApplied] = useState(false);
@@ -131,98 +132,61 @@ export default function Home() {
   // Tag helpers
   const handleAddTag = () => {
     const trimmed = tagInput.trim().toLowerCase();
-    if (trimmed && !selectedTags.includes(trimmed)) {
-      setSelectedTags(prev => [...prev, trimmed]);
-    }
+    if (trimmed && !selectedTags.includes(trimmed)) setSelectedTags(prev => [...prev, trimmed]);
     setTagInput('');
   };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setSelectedTags(prev => prev.filter(t => t !== tagToRemove));
-  };
+  const handleRemoveTag = (tag: string) => setSelectedTags(prev => prev.filter(t => t !== tag));
 
   // Apply filters
   const applyFilters = () => {
-    let result = deals.map((deal) => {
-      const distance = userLocation
-        ? getDistanceInMiles(
-            userLocation.lat,
-            userLocation.lng,
-            deal.latitude,
-            deal.longitude
-          )
-        : 0;
-      return { ...deal, distance };
-    });
+    let result = [...deals];
 
     if (minPrice) result = result.filter(d => d.discounted_price >= parseFloat(minPrice));
     if (maxPrice) result = result.filter(d => d.discounted_price <= parseFloat(maxPrice));
-    if (maxDistance) result = result.filter(d => d.distance <= parseFloat(maxDistance));
+    if (maxDistance) result = result.filter(d => (d.distance || 0) <= parseFloat(maxDistance));
     if (selectedCategory) result = result.filter(d => d.categories?.includes(selectedCategory));
-    if (selectedTags.length > 0) {
-      result = result.filter(d =>
-        selectedTags.every(tag => d.tags?.map(t => t.toLowerCase()).includes(tag))
-      );
+    if (selectedTags.length) {
+      result = result.filter(d => selectedTags.every(tag => d.tags?.map(t => t.toLowerCase()).includes(tag)));
     }
-    if (savedOnly) {
-      result = result.filter(d => savedDealIds.includes(d.id));
-    }
+    if (minUpvotes) result = result.filter(d => (d.upvotes || 0) >= parseInt(minUpvotes));
+    if (maxDownvotes) result = result.filter(d => (d.downvotes || 0) <= parseInt(maxDownvotes));
+    if (savedOnly) result = result.filter(d => savedDealIds.includes(d.id));
 
     setFilteredDeals(result);
     setFiltersApplied(true);
   };
 
-  // Clear filters
   const clearFilters = () => {
-    setMinPrice('');
-    setMaxPrice('');
-    setMaxDistance('');
-    setSelectedCategory('');
-    setTagInput('');
-    setSelectedTags([]);
-    setSavedOnly(false);
+    setMinPrice(''); setMaxPrice(''); setMaxDistance(''); setSelectedCategory('');
+    setTagInput(''); setSelectedTags([]); setMinUpvotes(''); setMaxDownvotes(''); setSavedOnly(false);
     setFiltersApplied(false);
 
-    const result = deals.map((deal) => {
-      const distance = userLocation
-        ? getDistanceInMiles(
-            userLocation.lat,
-            userLocation.lng,
-            deal.latitude,
-            deal.longitude
-          )
-        : 0;
-      return { ...deal, distance };
-    });
-
+    const result = deals.map(d => ({
+      ...d,
+      distance: userLocation ? getDistanceInMiles(userLocation.lat, userLocation.lng, d.latitude, d.longitude) : 0
+    }));
     setFilteredDeals(result);
   };
 
-  const handleTabChange = (value: string) => {
-    router.push(`/?tab=${value}`);
-  };
+  const handleTabChange = (value: string) => router.push(`/?tab=${value}`);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 flex flex-col items-center justify-center">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-300/40">
-          <Loader2 className="h-8 w-8 text-white animate-spin" />
-        </div>
-        <p className="mt-4 text-gray-600 font-medium">Loading deals...</p>
+  if (loading) return (
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 flex flex-col items-center justify-center">
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-300/40">
+        <Loader2 className="h-8 w-8 text-white animate-spin" />
       </div>
-    );
-  }
+      <p className="mt-4 text-gray-600 font-medium">Loading deals...</p>
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 flex items-center justify-center">
-        <div className="bg-red-50 border border-red-200 p-6 rounded-2xl shadow-sm text-center max-w-md">
-          <h3 className="font-semibold text-red-600 mb-1">Oops!</h3>
-          <p className="text-gray-600 text-sm">{error}</p>
-        </div>
+  if (error) return (
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 flex items-center justify-center">
+      <div className="bg-red-50 border border-red-200 p-6 rounded-2xl shadow-sm text-center max-w-md">
+        <h3 className="font-semibold text-red-600 mb-1">Oops!</h3>
+        <p className="text-gray-600 text-sm">{error}</p>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 relative overflow-hidden">
@@ -230,169 +194,99 @@ export default function Home() {
         {/* Header */}
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100/60 border border-blue-200 backdrop-blur-sm">
-            <span className="text-sm font-semibold text-blue-600">
-              {deals.length} Active Deals
-            </span>
+            <span className="text-sm font-semibold text-blue-600">{deals.length} Active Deals</span>
           </div>
-
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
-            Discover Deals
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl">
-            Explore amazing local offers and save money on your favorite places
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">Discover Deals</h1>
+          <p className="text-lg text-gray-600 max-w-2xl">Explore amazing local offers and save money on your favorite places</p>
         </div>
 
-        {/* Main content: filters + deals */}
+        {/* Filters + Deals */}
         <div className="flex gap-6 mt-4">
-          {/* Filter panel */}
           <div className="w-64 bg-white rounded-2xl p-4 shadow-md h-fit flex flex-col gap-4">
             <h2 className="font-bold text-gray-900 text-lg">Filters</h2>
 
+            {/* Price */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Min Price</label>
-              <Input
-                type="number"
-                placeholder="Min"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-              />
+              <Input type="number" placeholder="Min" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
             </div>
-
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Max Price</label>
-              <Input
-                type="number"
-                placeholder="Max"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-              />
+              <Input type="number" placeholder="Max" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
             </div>
 
+            {/* Distance */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Max Distance (mi)</label>
-              <Input
-                type="number"
-                placeholder="e.g., 10"
-                value={maxDistance}
-                onChange={(e) => setMaxDistance(e.target.value)}
-              />
+              <Input type="number" placeholder="e.g., 10" value={maxDistance} onChange={e => setMaxDistance(e.target.value)} />
             </div>
 
+            {/* Category */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Category</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2"
-              >
+              <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="w-full border border-gray-300 rounded-md p-2">
                 <option value="">All</option>
-                {categories.map((cat) => (
-                  <option key={cat.value} value={cat.value}>{cat.label}</option>
-                ))}
+                {categories.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
               </select>
             </div>
 
+            {/* Tags */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Tags</label>
               <div className="flex gap-2">
                 <Input
                   placeholder="Type a tag and press Enter"
                   value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
                   className="h-12 text-base rounded-xl border-blue-200 focus-visible:ring-blue-200 transition-all"
                 />
-                <Button
-                  type="button"
-                  onClick={handleAddTag}
-                  className="h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  Add
-                </Button>
+                <Button type="button" onClick={handleAddTag} className="h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Add</Button>
               </div>
-
               {selectedTags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedTags.map((tag) => (
-                    <div
-                      key={tag}
-                      className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
-                    >
+                  {selectedTags.map(tag => (
+                    <div key={tag} className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                       <span>{tag}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag)}
-                        className="ml-1 text-blue-500 hover:text-blue-700"
-                      >
-                        ✕
-                      </button>
+                      <button type="button" onClick={() => handleRemoveTag(tag)} className="ml-1 text-blue-500 hover:text-blue-700">✕</button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Saved Deals Only Toggle */}
-            <div className="flex items-center gap-2 mt-2">
-              <input
-                type="checkbox"
-                id="savedOnly"
-                checked={savedOnly}
-                onChange={(e) => setSavedOnly(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-              />
-              <label htmlFor="savedOnly" className="text-sm text-gray-700">
-                Saved Deals Only
-              </label>
+            {/* Upvotes / Downvotes */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Min Upvotes</label>
+              <Input type="number" placeholder="0" value={minUpvotes} onChange={e => setMinUpvotes(e.target.value)} />
+              <label className="text-sm font-medium text-gray-700">Max Downvotes</label>
+              <Input type="number" placeholder="100" value={maxDownvotes} onChange={e => setMaxDownvotes(e.target.value)} />
             </div>
 
-            <div className="flex gap-2 mt-2">
-              <Button
-                className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
-                onClick={applyFilters}
-              >
-                Apply
-              </Button>
+            {/* Saved Toggle */}
+            <div className="flex items-center gap-2 mt-2">
+              <input type="checkbox" id="savedOnly" checked={savedOnly} onChange={e => setSavedOnly(e.target.checked)} className="w-4 h-4 text-blue-600 border-gray-300 rounded" />
+              <label htmlFor="savedOnly" className="text-sm text-gray-700">Saved Deals Only</label>
+            </div>
 
-              <Button
-                className={cn(
-                  'flex-1 transition-colors',
-                  filtersApplied
-                    ? 'bg-red-500 text-white hover:bg-red-600'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                )}
-                onClick={clearFilters}
-                disabled={
-                  !minPrice && !maxPrice && !maxDistance && !selectedCategory && selectedTags.length === 0 && !savedOnly
-                }
-              >
-                Clear
-              </Button>
+            {/* Apply / Clear */}
+            <div className="flex gap-2 mt-2">
+              <Button className="flex-1 bg-blue-600 text-white hover:bg-blue-700" onClick={applyFilters}>Apply</Button>
+              <Button className={cn('flex-1 transition-colors', filtersApplied ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')} onClick={clearFilters} disabled={!minPrice && !maxPrice && !maxDistance && !selectedCategory && !selectedTags.length && !minUpvotes && !maxDownvotes && !savedOnly}>Clear</Button>
             </div>
           </div>
 
-          {/* Deals list/map */}
+          {/* Deals view */}
           <div className="flex-1">
             <Tabs value={currentTab} onValueChange={handleTabChange}>
               <TabsList className="grid w-full grid-cols-2 h-12 bg-white/80 backdrop-blur border border-gray-200 rounded-xl p-1 shadow-sm mb-4">
-                <TabsTrigger value="list" className={cn(
-                  'rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all hover:cursor-pointer'
-                )}>
+                <TabsTrigger value="list" className={cn('rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all hover:cursor-pointer')}>
                   <List className="h-4 w-4 mr-2" /> List
                 </TabsTrigger>
-                <TabsTrigger value="map" className={cn(
-                  'rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all hover:cursor-pointer'
-                )}>
+                <TabsTrigger value="map" className={cn('rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white transition-all hover:cursor-pointer')}>
                   <MapIcon className="h-4 w-4 mr-2" /> Map
                 </TabsTrigger>
               </TabsList>
-
               <TabsContent value="list">
                 <ListView deals={filteredDeals} />
               </TabsContent>

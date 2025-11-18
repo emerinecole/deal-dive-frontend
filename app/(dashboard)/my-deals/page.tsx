@@ -4,19 +4,28 @@ import { useEffect, useState } from 'react';
 import { useSupabase } from '@/app/providers/supabase-provider';
 import { Deal } from '@/lib/types/deals';
 import { getDeals } from '@/lib/services/deal-service';
+import { getVotes } from '@/lib/services/vote-service';
 import Link from 'next/link';
 import {
   MapPin,
   DollarSign,
   TrendingDown,
   ArrowRight,
-  Package
+  Package,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+interface DealVotes {
+  upvotes: number;
+  downvotes: number;
+}
 
 export default function MyDealsPage() {
   const { supabase } = useSupabase();
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [votesMap, setVotesMap] = useState<Record<string, DealVotes>>({});
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -36,10 +45,21 @@ export default function MyDealsPage() {
 
       try {
         const allDeals = await getDeals();
-
         const userDeals = allDeals.filter(deal => deal.created_by === user.id);
-
         setDeals(userDeals);
+
+        // Fetch votes for each deal
+        userDeals.forEach(async (deal) => {
+          try {
+            const voteData = await getVotes(String(deal.id));
+            const upvotes = voteData.votes.filter(v => v.vote_type === 1).length;
+            const downvotes = voteData.votes.filter(v => v.vote_type === -1).length;
+            setVotesMap(prev => ({ ...prev, [deal.id]: { upvotes, downvotes } }));
+          } catch {
+            setVotesMap(prev => ({ ...prev, [deal.id]: { upvotes: 0, downvotes: 0 } }));
+          }
+        });
+
       } catch {
         alert('Error fetching deals');
         setDeals([]);
@@ -101,6 +121,7 @@ export default function MyDealsPage() {
           const savings = calculateSavings(deal.original_price, deal.discounted_price);
           const visibleTags = deal.tags?.slice(0, 3) || [];
           const hasMoreTags = deal.tags && deal.tags.length > 3;
+          const voteCounts = votesMap[deal.id] ?? { upvotes: 0, downvotes: 0 };
 
           return (
             <Link
@@ -160,6 +181,18 @@ export default function MyDealsPage() {
                         …
                       </span>
                     )}
+                  </div>
+
+                  {/* Vote Counts */}
+                  <div className="flex items-center gap-4 text-sm text-blue-700 mb-2">
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp className="h-4 w-4" />
+                      <span>{voteCounts.upvotes}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ThumbsDown className="h-4 w-4" />
+                      <span>{voteCounts.downvotes}</span>
+                    </div>
                   </div>
 
                   <div className="pt-3 border-t border-blue-200 mt-auto">
