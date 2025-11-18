@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getSavedDeals } from '@/lib/services/saved-deal-service';
+import { getVotes } from '@/lib/services/vote-service';
 import { Deal } from '@/lib/types/deals';
 import Link from 'next/link';
 import {
@@ -9,12 +10,20 @@ import {
   DollarSign,
   TrendingDown,
   ArrowRight,
-  Package
+  Package,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+interface DealVotes {
+  upvotes: number;
+  downvotes: number;
+}
+
 export default function SavedPage() {
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [votesMap, setVotesMap] = useState<Record<string, DealVotes>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,6 +32,19 @@ export default function SavedPage() {
         setLoading(true);
         const data = await getSavedDeals();
         setDeals(data);
+
+        // Fetch votes for each saved deal
+        data.forEach(async (deal) => {
+          try {
+            const voteData = await getVotes(String(deal.id));
+            const upvotes = voteData.votes.filter(v => v.vote_type === 1).length;
+            const downvotes = voteData.votes.filter(v => v.vote_type === -1).length;
+            setVotesMap(prev => ({ ...prev, [deal.id]: { upvotes, downvotes } }));
+          } catch {
+            setVotesMap(prev => ({ ...prev, [deal.id]: { upvotes: 0, downvotes: 0 } }));
+          }
+        });
+
       } catch {
         alert('Failed to load saved deals');
       } finally {
@@ -46,7 +68,6 @@ export default function SavedPage() {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
-  // LOADING
   if (loading)
     return (
       <div className="p-12 text-blue-700">
@@ -54,8 +75,6 @@ export default function SavedPage() {
       </div>
     );
 
-
-  // EMPTY STATE
   if (deals.length === 0) {
     return (
       <div className="bg-white/70 backdrop-blur-md rounded-3xl border border-blue-200 shadow-xl p-12 text-blue-900 text-center">
@@ -74,7 +93,6 @@ export default function SavedPage() {
     );
   }
 
-  // MAIN PAGE
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 p-6">
       <h1 className="text-3xl font-bold text-blue-900 mb-6">Saved Deals</h1>
@@ -84,6 +102,7 @@ export default function SavedPage() {
           const savings = calculateSavings(deal.original_price, deal.discounted_price);
           const visibleTags = deal.tags?.slice(0, 3) || [];
           const hasMoreTags = deal.tags && deal.tags.length > 3;
+          const voteCounts = votesMap[deal.id] ?? { upvotes: 0, downvotes: 0 };
 
           return (
             <Link
@@ -146,6 +165,18 @@ export default function SavedPage() {
                         …
                       </span>
                     )}
+                  </div>
+
+                  {/* Vote Counts */}
+                  <div className="flex items-center gap-4 text-sm text-blue-700 mb-2">
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp className="h-4 w-4" />
+                      <span>{voteCounts.upvotes}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ThumbsDown className="h-4 w-4" />
+                      <span>{voteCounts.downvotes}</span>
+                    </div>
                   </div>
 
                   {/* Price Section */}

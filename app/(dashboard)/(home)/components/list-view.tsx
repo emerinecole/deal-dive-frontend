@@ -1,13 +1,19 @@
+'use client';
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Deal } from "@/lib/types/deals";
 import { 
   MapPin, 
   DollarSign, 
   TrendingDown, 
   ArrowRight,
-  Package
+  Package,
+  ThumbsUp,
+  ThumbsDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getVotes } from "@/lib/services/vote-service";
 
 interface DealWithDistance extends Deal {
   distance?: number; // distance in miles
@@ -17,7 +23,31 @@ interface ListViewProps {
   deals: DealWithDistance[];
 }
 
+interface DealVotes {
+  upvotes: number;
+  downvotes: number;
+}
+
 export default function ListView({ deals }: ListViewProps) {
+  const [votesMap, setVotesMap] = useState<Record<string, DealVotes>>({});
+
+  useEffect(() => {
+    deals.forEach(async (deal) => {
+      try {
+        const voteData = await getVotes(String(deal.id));
+        const upvotes = voteData.votes.filter(v => v.vote_type === 1).length;
+        const downvotes = voteData.votes.filter(v => v.vote_type === -1).length;
+  
+        setVotesMap(prev => ({
+          ...prev,
+          [deal.id]: { upvotes, downvotes }
+        }));
+      } catch (err) {
+        console.error('Failed to fetch votes for deal', deal.id, err);
+      }
+    });
+  }, [deals]);
+
   if (deals.length === 0) {
     return (
       <div className="bg-white/70 backdrop-blur-md rounded-3xl border border-blue-200 shadow-xl p-12 text-blue-900">
@@ -62,6 +92,7 @@ export default function ListView({ deals }: ListViewProps) {
           const savings = calculateSavings(deal.original_price, deal.discounted_price);
           const visibleTags = deal.tags?.slice(0, 3) || [];
           const hasMoreTags = deal.tags && deal.tags.length > 3;
+          const voteCounts = votesMap[deal.id] ?? { upvotes: 0, downvotes: 0 };
 
           return (
             <Link
@@ -105,18 +136,16 @@ export default function ListView({ deals }: ListViewProps) {
                     {deal.description}
                   </p>
 
-                  {/*Categories & Tags */}
+                  {/* Categories & Tags */}
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {deal.categories && deal.categories.length > 0 && (
-                      deal.categories.map((cat, idx) => (
-                        <span
-                          key={`cat-${idx}`}
-                          className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full border border-blue-200"
-                        >
-                          {capitalizeWords(cat)}
-                        </span>
-                      ))
-                    )}
+                    {deal.categories?.map((cat, idx) => (
+                      <span
+                        key={`cat-${idx}`}
+                        className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full border border-blue-200"
+                      >
+                        {capitalizeWords(cat)}
+                      </span>
+                    ))}
 
                     {visibleTags.map((tag, idx) => (
                       <span
@@ -134,6 +163,19 @@ export default function ListView({ deals }: ListViewProps) {
                     )}
                   </div>
 
+                  {/* Vote counts */}
+                  <div className="flex items-center gap-4 text-sm text-blue-700/80 mb-3">
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp className="h-4 w-4" />
+                      <span>{voteCounts.upvotes}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ThumbsDown className="h-4 w-4" />
+                      <span>{voteCounts.downvotes}</span>
+                    </div>
+                  </div>
+
+                  {/* Price */}
                   <div className="pt-3 border-t border-blue-200 mt-auto">
                     <div className="flex items-end justify-between mt-3">
                       <div className="space-y-1">
