@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MapView from './components/map-view';
 import ListView from './components/list-view';
 import { getDeals } from '@/lib/services/deal-service';
+import { getSavedDeals } from '@/lib/services/saved-deal-service';
 import { Deal } from '@/lib/types/deals';
 import { MapIcon, List, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,17 +27,17 @@ export default function Home() {
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [maxDistance, setMaxDistance] = useState('');
-  
   const [selectedCategory, setSelectedCategory] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [savedDealIds, setSavedDealIds] = useState<number[]>([]);
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "list";
 
-
-  
   const categories = [
     { label: 'Restaurant (Food)', value: 'restaurant' },
     { label: 'Bar (Drinks)', value: 'bar' },
@@ -60,7 +61,7 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch deals
+  // Fetch all deals
   useEffect(() => {
     const fetchDeals = async () => {
       try {
@@ -74,6 +75,19 @@ export default function Home() {
       }
     };
     fetchDeals();
+  }, []);
+
+  // Fetch saved deals IDs for the toggle
+  useEffect(() => {
+    const fetchSavedDealsIds = async () => {
+      try {
+        const savedDeals = await getSavedDeals();
+        setSavedDealIds(savedDeals.map(d => d.id));
+      } catch {
+        alert('Failed to fetch saved deals');
+      }
+    };
+    fetchSavedDealsIds();
   }, []);
 
   // Haversine formula to calculate distance in miles
@@ -109,7 +123,7 @@ export default function Home() {
       return { ...deal, distance };
     });
 
-    setFilteredDeals(dealsWithDistance); // populate filteredDeals immediately
+    setFilteredDeals(dealsWithDistance);
   }, [deals, userLocation]);
 
   const [filtersApplied, setFiltersApplied] = useState(false);
@@ -150,6 +164,9 @@ export default function Home() {
         selectedTags.every(tag => d.tags?.map(t => t.toLowerCase()).includes(tag))
       );
     }
+    if (savedOnly) {
+      result = result.filter(d => savedDealIds.includes(d.id));
+    }
 
     setFilteredDeals(result);
     setFiltersApplied(true);
@@ -163,6 +180,7 @@ export default function Home() {
     setSelectedCategory('');
     setTagInput('');
     setSelectedTags([]);
+    setSavedOnly(false);
     setFiltersApplied(false);
 
     const result = deals.map((deal) => {
@@ -320,6 +338,20 @@ export default function Home() {
               )}
             </div>
 
+            {/* Saved Deals Only Toggle */}
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="checkbox"
+                id="savedOnly"
+                checked={savedOnly}
+                onChange={(e) => setSavedOnly(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+              />
+              <label htmlFor="savedOnly" className="text-sm text-gray-700">
+                Saved Deals Only
+              </label>
+            </div>
+
             <div className="flex gap-2 mt-2">
               <Button
                 className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
@@ -337,7 +369,7 @@ export default function Home() {
                 )}
                 onClick={clearFilters}
                 disabled={
-                  !minPrice && !maxPrice && !maxDistance && !selectedCategory && selectedTags.length === 0
+                  !minPrice && !maxPrice && !maxDistance && !selectedCategory && selectedTags.length === 0 && !savedOnly
                 }
               >
                 Clear
