@@ -44,8 +44,8 @@ export default function MapView({ deals }: MapViewProps) {
         const upvotes = voteData.votes.filter(v => v.vote_type === 1).length;
         const downvotes = voteData.votes.filter(v => v.vote_type === -1).length;
         setVotesMap(prev => ({ ...prev, [deal.id]: { upvotes, downvotes } }));
-      } catch (err) {
-        console.error('Failed to fetch votes for deal', deal.id, err);
+      } catch {
+        alert('Failed to fetch votes for deal');
       }
     });
   }, [deals]);

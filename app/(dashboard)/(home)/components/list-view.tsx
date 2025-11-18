@@ -42,8 +42,8 @@ export default function ListView({ deals }: ListViewProps) {
           ...prev,
           [deal.id]: { upvotes, downvotes }
         }));
-      } catch (err) {
-        console.error('Failed to fetch votes for deal', deal.id, err);
+      } catch {
+        alert('Failed to fetch votes for deal');
       }
     });
   }, [deals]);
