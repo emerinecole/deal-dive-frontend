@@ -1,6 +1,5 @@
 import Link from "next/link";
 import SignupForm from "./signup-form";
-import SignupSocialAuth from "./signup-social-auth";
 
 export default function SignupContainer() {
   return (
@@ -29,16 +28,11 @@ export default function SignupContainer() {
 
           {/* Main Card */}
           <div className="bg-white backdrop-blur-xl rounded-3xl border border-blue-100 shadow-2xl shadow-blue-100/15 p-8">
-            <SignupSocialAuth />
 
             {/* Divider */}
             <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-blue-100" />
-              </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white text-blue-700 font-medium">
-                  Or continue with email
                 </span>
               </div>
             </div>
