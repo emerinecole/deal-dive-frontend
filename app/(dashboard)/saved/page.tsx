@@ -20,7 +20,7 @@ export default function SavedPage() {
         const data = await getSavedDeals();
         setDeals(data);
       } catch (err) {
-        console.error('Failed to load saved deals:', err);
+        throw new Error('Failed to load saved deals:' + err);
         setError('Failed to load saved deals');
       } finally {
         setLoading(false);

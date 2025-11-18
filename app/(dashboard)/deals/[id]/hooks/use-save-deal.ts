@@ -16,7 +16,7 @@ export function useSaveDeal(dealId: string | undefined, userId: UUID | null) {
         const isSaved = savedDeals.some(deal => String(deal.id) === dealId);
         setSaved(isSaved);
       } catch (err) {
-        console.error('Failed to check saved status:', err);
+        throw new Error('Failed to check saved status:' + err);
       }
     };
 
@@ -36,7 +36,7 @@ export function useSaveDeal(dealId: string | undefined, userId: UUID | null) {
         setSaved(true);
       }
     } catch (err) {
-      console.error('Failed to toggle save:', err);
+      throw new Error('Failed to toggle save:' + err);
       alert('Failed to save deal. Please try again.');
     } finally {
       setSaveBusy(false);
