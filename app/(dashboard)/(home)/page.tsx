@@ -84,7 +84,7 @@ export default function Home() {
         const savedDeals = await getSavedDeals();
         setSavedDealIds(savedDeals.map(d => d.id));
       } catch {
-        console.error('Failed to fetch saved deals');
+        alert('Failed to fetch saved deals');
       }
     };
     fetchSavedDealsIds();
