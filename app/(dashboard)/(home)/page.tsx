@@ -139,7 +139,7 @@ export default function Home() {
 
   // Apply filters
   const applyFilters = () => {
-    let result = [...deals];
+    let result = [...filteredDeals];
 
     if (minPrice) result = result.filter(d => d.discounted_price >= parseFloat(minPrice));
     if (maxPrice) result = result.filter(d => d.discounted_price <= parseFloat(maxPrice));
