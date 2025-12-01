@@ -1,4 +1,4 @@
-Master README found on backend respository: https://github.com/CMunjed/deal-dive-backend
+Master README found on backend respository: [https://github.com/CMunjed/deal-dive-backend](https://github.com/CMunjed/deal-dive-backend/blob/main/README.md)
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
@@ -37,7 +37,7 @@ from the website and you should be redirected into the application. Or you can c
 
 ## Technical Specifications
 
-More information about the technical specifications can be found in the README of our backend repository found here: https://github.com/CMunjed/deal-dive-backend
+More information about the technical specifications can be found in the README of our backend repository found here: [https://github.com/CMunjed/deal-dive-backend](https://github.com/CMunjed/deal-dive-backend/blob/main/README.md)
 
 ## Project Structure
 
