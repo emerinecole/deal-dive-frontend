@@ -16,7 +16,6 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
@@ -31,6 +30,13 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Our application is currently deployed on Vercel frontend at https://deal-dive-frontend.vercel.app/ but there is an error in our signup/signin page on our deployed version. So if you go to the deployed version and signup/signin, you will get stuck in a loop of returning to the signup page. In order to bypass this, signin and then remove the "/auth/signup"
+from the website and you should be redirected into the application. Or you can continue to deploy locally where this navigation bug does not exist. We believe that the bug lies within our supabase/vercel redirection but we haven't been able to figure it out yet. Deploymnet locally for frontend as stated above works perfectly well.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Technical Specifications
+
+More information about the technical specifications can be found in the README of our backend repository found here: https://github.com/CMunjed/deal-dive-backend
+
+## Project Structure
+
+Within the frontend, the project's main code is structure in the /app folder. Within here is the layout for the overall screen in layout.tsx but also each aspect of each screen. Within (Dashboard), each screen has its own folder for the frontend code. All signup/signin information is found in the auth folder. Outside of the /app folder: Schemas, services, and types can be found in the lib folder and that is essentially the important files/folders for understanding the frontend code.
