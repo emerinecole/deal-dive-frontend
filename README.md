@@ -42,3 +42,24 @@ More information about the technical specifications can be found in the README o
 ## Project Structure
 
 Within the frontend, the project's main code is structure in the /app folder. Within here is the layout for the overall screen in layout.tsx but also each aspect of each screen. Within (Dashboard), each screen has its own folder for the frontend code. All signup/signin information is found in the auth folder. Outside of the /app folder: Schemas, services, and types can be found in the lib folder and that is essentially the important files/folders for understanding the frontend code.
+
+deal-dive/
+├── app/
+│   ├── (dashboard)/       # Main app pages (home, deals, account, create)
+│   ├── auth/              # Authentication pages (login, signup, verification)
+│   ├── components/        # App-scoped components
+│   ├── providers/         # React context providers
+│   └── [layout & styles]  # Root layout and global CSS
+├── components/
+│   └── ui/                # Reusable UI components (shadcn/ui)
+├── constants/             # API endpoints, routes, query keys
+├── hooks/                 # Global custom hooks
+├── lib/                   # Core library code
+│   ├── services/         # API service layer
+│   ├── supabase/         # Supabase client configuration
+│   ├── schemas/          # Validation schemas
+│   ├── types/            # TypeScript type definitions
+│   └── utils.ts          # Utility functions
+├── public/                # Static assets and images
+└── [config files]         # Next.js, TypeScript, ESLint, Tailwind configs
+
